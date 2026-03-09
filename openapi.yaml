@@ -1,0 +1,916 @@
+openapi: 3.0.3
+info:
+  title: DPMA Connect Plus API (unofficial)
+  description: |
+    German Patent and Trademark Office (DPMA) Connect Plus REST API for accessing
+    register and publication data for German patents, utility models, designs, and trademarks.
+
+    **Authentication**: HTTP Basic Authentication required for all endpoints.
+    **Base URL**: https://dpmaconnect.dpma.de/dpmaws/rest-services
+
+    This specification was hand-crafted from the official DPMA documentation.
+
+    **Services**:
+    - DPMAregisterPatService: Patents and Utility Models
+    - DPMAregisterGsmService: Designs (Geschmacksmuster)
+    - DPMAregisterMarkeService: Trademarks (Marken)
+
+    **Data Availability**:
+    - Register data: Updated daily
+    - Publication data: Updated weekly (Patents/Utility Models: Thursday, Designs/Trademarks: Friday)
+
+    **Search Limits**:
+    - Full accounts: Maximum 1000 results
+    - Test accounts: Maximum 100 results
+  version: 1.0.0
+  contact:
+    name: Wolfgang Stark
+    url: https://patent.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://dpmaconnect.dpma.de/dpmaws/rest-services
+    description: Production server
+
+security:
+  - BasicAuth: []
+
+paths:
+  # ===== Common Endpoints =====
+  /{service}/version:
+    get:
+      summary: Get service version
+      description: Returns version information for the specified service
+      operationId: getVersion
+      tags:
+        - Common
+      parameters:
+        - name: service
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - DPMAregisterPatService
+              - DPMAregisterGsmService
+              - DPMAregisterMarkeService
+      responses:
+        '200':
+          description: Version information
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "DPMAregisterPatService version 1.0"
+
+  # ===== Patent Service =====
+  /DPMAregisterPatService/search/{query}:
+    get:
+      summary: Search patents and utility models
+      description: |
+        Execute expert search query for patents and utility models.
+        Query syntax must follow DPMAregister expert search format.
+        Returns XML hit list matching PatentHitList.xsd schema.
+      operationId: searchPatents
+      tags:
+        - Patents
+      parameters:
+        - name: query
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Expert search query string
+          example: "TI=Elektrofahrzeug"
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '403':
+          description: Forbidden
+
+  /DPMAregisterPatService/getRegisterInfo/{registeredNumber}:
+    get:
+      summary: Get patent/utility model details
+      description: |
+        Retrieve detailed information for a specific patent or utility model.
+        Returns XML following DPMA ST36 extension schema.
+      operationId: getPatentInfo
+      tags:
+        - Patents
+      parameters:
+        - name: registeredNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Leading registered number (unique identifier)
+          example: "DE102023000001A1"
+      responses:
+        '200':
+          description: Patent details
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterPatService/getRegisterabzuege/{date}/{period}:
+    get:
+      summary: Get register extracts
+      description: |
+        Download register extract ZIP file for specified date and period.
+        Returns the most recent extract up to the specified date.
+      operationId: getPatentRegisterExtract
+      tags:
+        - Patents
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Query date in YYYY-MM-DD format
+          example: "2024-10-23"
+        - name: period
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, yearly]
+          description: Time period for extract
+      responses:
+        '200':
+          description: ZIP file containing register extract
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getPublikationsdaten_XML/{publicationWeek}:
+    get:
+      summary: Get publication data (XML)
+      description: |
+        Download bibliographic data including legal and procedural status in XML format.
+        Returns ZIP file: pat_pu_xml_<YYYYWW>.zip
+      operationId: getPublicationDataXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing publication data
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getAnmelderzitate_XML/{publicationWeek}:
+    get:
+      summary: Get applicant citations (XML)
+      description: |
+        Download applicant citations in XML format.
+        Returns ZIP file: pat_cit_<YYYYWW>.zip
+      operationId: getApplicantCitationsXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing applicant citations
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getOffenlegungsschriften_Volltext_XML/{publicationWeek}:
+    get:
+      summary: Get disclosure documents full-text (XML)
+      description: |
+        Download disclosure documents (A) as full-text in XML format.
+        Returns ZIP file: pat_vt_a_st36_<YYYYWW>.zip
+      operationId: getDisclosureDocumentsXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing disclosure documents
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getPatentschriften_Volltext_XML/{publicationWeek}:
+    get:
+      summary: Get patent specifications full-text (XML)
+      description: |
+        Download patent specifications (B, C) as full-text in XML format.
+        Returns ZIP file: pat_vt_c_st36_<YYYYWW>.zip
+      operationId: getPatentSpecificationsXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing patent specifications
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getEuropaeischePatentschriften_Volltext_XML/{publicationWeek}:
+    get:
+      summary: Get European patent specifications full-text (XML)
+      description: |
+        Download European patent specifications (T1-T5, T8, T9) as full-text in XML format.
+        Returns ZIP file: pat_vt_t_st36_<YYYYWW>.zip
+      operationId: getEuropeanPatentSpecificationsXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing European patent specifications
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getGebrauchsmuster_Volltext_XML/{publicationWeek}:
+    get:
+      summary: Get utility models full-text (XML)
+      description: |
+        Download utility models (U) as full-text in XML format.
+        Returns ZIP file: gbm_vt_u_st36_<YYYYWW>.zip
+      operationId: getUtilityModelsXML
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing utility models
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getOffenlegungsschriften_Komplett_PDF/{publicationWeek}:
+    get:
+      summary: Get disclosure documents complete (PDF)
+      description: |
+        Download complete disclosure documents (A) in PDF format.
+        Returns ZIP file: pat_vt_a_pdf_<YYYYWW>.zip
+      operationId: getDisclosureDocumentsPDF
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing disclosure documents PDFs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getPatentschriften_Komplett_PDF/{publicationWeek}:
+    get:
+      summary: Get patent specifications complete (PDF)
+      description: |
+        Download complete patent specifications (B, C) in PDF format.
+        Returns ZIP file: pat_vt_c_pdf_<YYYYWW>.zip
+      operationId: getPatentSpecificationsPDF
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing patent specifications PDFs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getEuropaeischePatentschriften_Komplett_PDF/{publicationWeek}:
+    get:
+      summary: Get European patent specifications complete (PDF)
+      description: |
+        Download complete European patent specifications (T1-T5, T8, T9) in PDF format.
+        Returns ZIP file: pat_vt_t_pdf_<YYYYWW>.zip
+      operationId: getEuropeanPatentSpecificationsPDF
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing European patent specifications PDFs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getGebrauchsmuster_Komplett_PDF/{publicationWeek}:
+    get:
+      summary: Get utility models complete (PDF)
+      description: |
+        Download complete utility models (U) in PDF format.
+        Returns ZIP file: gbm_vt_u_pdf_<YYYYWW>.zip
+      operationId: getUtilityModelsPDF
+      tags:
+        - Patents
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing utility models PDFs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterPatService/getPatentpublikation_PDF/{documentID}:
+    get:
+      summary: Get patent publication (PDF)
+      description: Download a single patent publication in PDF format by document ID
+      operationId: getPatentPublicationPDF
+      tags:
+        - Patents
+      parameters:
+        - name: documentID
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document ID
+          example: "DE102023000001A1"
+      responses:
+        '200':
+          description: PDF file of patent publication
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterPatService/getRecherchierbarerVolltext/{documentID}:
+    get:
+      summary: Get searchable full-text (PDF)
+      description: Download a patent publication as searchable full-text PDF by document ID
+      operationId: getSearchableFullText
+      tags:
+        - Patents
+      parameters:
+        - name: documentID
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document ID
+          example: "DE102023000001A1"
+      responses:
+        '200':
+          description: Searchable full-text PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  # ===== Design Service =====
+  /DPMAregisterGsmService/search/{query}:
+    get:
+      summary: Search designs
+      description: |
+        Execute expert search query for designs.
+        Query syntax must follow DPMAregister expert search format.
+        Returns XML hit list matching DesignHitList.xsd schema.
+      operationId: searchDesigns
+      tags:
+        - Designs
+      parameters:
+        - name: query
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Expert search query string
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterGsmService/getRegisterInfo/{designNumber}:
+    get:
+      summary: Get design details
+      description: |
+        Retrieve detailed information for a specific design.
+        Returns XML following DPMA ST86 extension schema.
+      operationId: getDesignInfo
+      tags:
+        - Designs
+      parameters:
+        - name: designNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Design number (unique identifier)
+          example: "40202300001"
+      responses:
+        '200':
+          description: Design details
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterGsmService/getRegisterFullImage/{designNumber}/{imageNumber}:
+    get:
+      summary: Get design image
+      description: Retrieve full-size image for a specific design
+      operationId: getDesignImage
+      tags:
+        - Designs
+      parameters:
+        - name: designNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Design number
+        - name: imageNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Image number
+      responses:
+        '200':
+          description: JPG image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterGsmService/getRegisterThumbnailImage/{designNumber}/{thumbnailNumber}:
+    get:
+      summary: Get design thumbnail
+      description: Retrieve thumbnail image for a specific design
+      operationId: getDesignThumbnail
+      tags:
+        - Designs
+      parameters:
+        - name: designNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Design number
+        - name: thumbnailNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Thumbnail number
+      responses:
+        '200':
+          description: JPG thumbnail
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterGsmService/getRegisterabzuege/{date}/{period}:
+    get:
+      summary: Get design register extracts
+      description: Download register extract ZIP file for designs
+      operationId: getDesignRegisterExtract
+      tags:
+        - Designs
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Query date in YYYY-MM-DD format
+        - name: period
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, yearly]
+      responses:
+        '200':
+          description: ZIP file containing register extract
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterGsmService/getBibliografischeDaten_eingetragen_XML/{publicationWeek}:
+    get:
+      summary: Get registered designs bibliographic data (XML)
+      description: |
+        Download bibliographic data for registered designs in XML format.
+        Returns ZIP file: gsm_bib_eing_xml_<YYYYWW>.zip
+      operationId: getDesignBibliographicDataXML
+      tags:
+        - Designs
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing bibliographic data
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterGsmService/getBilder_eingetragen_JPG_GIF/{publicationWeek}:
+    get:
+      summary: Get registered designs images (JPG/GIF)
+      description: |
+        Download images for registered designs in JPG/GIF format.
+        Returns ZIP file: gsm_bib_eing_<YYYYWW>.zip
+      operationId: getDesignImages
+      tags:
+        - Designs
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing images
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  # ===== Trademark Service =====
+  /DPMAregisterMarkeService/search/{query}:
+    get:
+      summary: Search trademarks
+      description: |
+        Execute expert search query for trademarks.
+        Query syntax must follow DPMAregister expert search format.
+        Returns XML hit list matching MarkenHitList.xsd schema.
+      operationId: searchTrademarks
+      tags:
+        - Trademarks
+      parameters:
+        - name: query
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Expert search query string
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterMarkeService/getRegisterInfo/{applicationNumber}:
+    get:
+      summary: Get trademark details
+      description: |
+        Retrieve detailed information for a specific trademark.
+        Returns XML following DPMA ST66 extension schema.
+      operationId: getTrademarkInfo
+      tags:
+        - Trademarks
+      parameters:
+        - name: applicationNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application number (unique identifier)
+          example: "302023000001"
+      responses:
+        '200':
+          description: Trademark details
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterMarkeService/getRegisterFullImage/{applicationNumber}:
+    get:
+      summary: Get trademark image
+      description: Retrieve full-size image for a specific trademark
+      operationId: getTrademarkImage
+      tags:
+        - Trademarks
+      parameters:
+        - name: applicationNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application number
+      responses:
+        '200':
+          description: JPG image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterMarkeService/getRegisterThumbnailImage/{applicationNumber}:
+    get:
+      summary: Get trademark thumbnail
+      description: Retrieve thumbnail image for a specific trademark
+      operationId: getTrademarkThumbnail
+      tags:
+        - Trademarks
+      parameters:
+        - name: applicationNumber
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application number
+      responses:
+        '200':
+          description: JPG thumbnail
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+        '404':
+          description: Resource not found
+
+  /DPMAregisterMarkeService/getRegisterabzuege/{date}/{period}:
+    get:
+      summary: Get trademark register extracts
+      description: Download register extract ZIP file for trademarks
+      operationId: getTrademarkRegisterExtract
+      tags:
+        - Trademarks
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Query date in YYYY-MM-DD format
+        - name: period
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, yearly]
+      responses:
+        '200':
+          description: ZIP file containing register extract
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterMarkeService/getBibliografischeDaten_angemeldet_XML_JPG/{publicationWeek}:
+    get:
+      summary: Get applied trademarks bibliographic data (XML/JPG)
+      description: |
+        Download bibliographic data and images for applied trademarks.
+        Returns ZIP file: mar_bib_ang_<YYYYWW>.zip
+      operationId: getTrademarkBibDataApplied
+      tags:
+        - Trademarks
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing bibliographic data and images
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterMarkeService/getBibliografischeDaten_eingetragen_XML_JPG_PDF/{publicationWeek}:
+    get:
+      summary: Get registered trademarks bibliographic data (XML/JPG/PDF)
+      description: |
+        Download bibliographic data, images, and goods/services lists for registered trademarks.
+        Includes geographical indications (Part 7 of trademark gazette) in PDF.
+        Returns ZIP file: mar_bib_wvz_bil_eing_<YYYYWW>.zip
+      operationId: getTrademarkBibDataRegistered
+      tags:
+        - Trademarks
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing bibliographic data, images, and PDFs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+  /DPMAregisterMarkeService/getBibliografischeDaten_zurueckgewiesen_zurueckgenommen_XML_PDF/{publicationWeek}:
+    get:
+      summary: Get rejected/withdrawn trademarks bibliographic data (XML/PDF)
+      description: |
+        Download bibliographic data and images for rejected and withdrawn trademarks.
+        Returns ZIP file: mar_bib_zur_<YYYYWW>.zip
+      operationId: getTrademarkBibDataRejected
+      tags:
+        - Trademarks
+      parameters:
+        - $ref: '#/components/parameters/PublicationWeek'
+      responses:
+        '200':
+          description: ZIP file containing bibliographic data and images
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication failed
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: |
+        HTTP Basic Authentication with username and password.
+        Credentials are Base64-encoded as: username:password
+
+  parameters:
+    PublicationWeek:
+      name: publicationWeek
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^\d{6}$'
+      description: Publication week in YYYYWW format (e.g., 202445 for year 2024, week 45)
+      example: "202445"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      description: XML error response in Transaction format
+      xml:
+        name: Transaction
+      properties:
+        TransactionHeader:
+          type: object
+          properties:
+            SenderDetails:
+              type: object
+              properties:
+                RequestProducerDateTime:
+                  type: string
+                  format: date-time
+        TradeMarkTransactionBody:
+          type: object
+          properties:
+            TransactionErrorDetails:
+              type: object
+              properties:
+                TransactionError:
+                  type: object
+                  properties:
+                    TransactionErrorCode:
+                      type: string
+                      example: "E001"
+                    TransactionErrorText:
+                      type: string
+                      example: "Data not available"
+
+
+tags:
+  - name: Common
+    description: Operations available on all services
+  - name: Patents
+    description: Operations for patents and utility models (DPMAregisterPatService)
+  - name: Designs
+    description: Operations for designs (DPMAregisterGsmService)
+  - name: Trademarks
+    description: Operations for trademarks (DPMAregisterMarkeService)

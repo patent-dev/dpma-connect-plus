@@ -1,0 +1,2717 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- *****************************************************************************************************
+Deutsches Patent- und Markenamt
+ST.36 XML Schema
+
+Autor:                 Dr. Thomas Plarre, Michael Fuchs
+Version:               0.18
+Letzte Aktualisierung: 20.08.2025
+
+***************************************************************************************************** -->
+<xs:schema version="0.18" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+  xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt" xmlns:d="http://docbook.org/ns/docbook"
+  elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:documentation>
+      <d:revhistory>
+        <!--
+        <d:revision>
+          <d:revnumber>0.1</d:revnumber>
+          <d:date>12.04.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Erste Version mit den Stammdaten.</d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.2</d:revnumber>
+          <d:date>29.04.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Anpassung der Kardinalitäten an das interne XML-Schema
+          </d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.3</d:revnumber>
+          <d:date>16.05.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Kommentare zu ST.36-Elementen eingepflegt. Einführung
+            des
+            Elements events als Klammer für Elemente des Typs event-data.
+            </d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.4</d:revnumber>
+          <d:date>20.05.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Anpassung der Kommentare.</d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.5</d:revnumber>
+          <d:date>24.05.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Element publication-reference auf optional gesetzt.
+          </d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.6</d:revnumber>
+          <d:date>25.05.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revdescription>
+            <d:itemizedlist>
+              <d:listitem>
+                <d:table>
+                  <d:title>Geänderte Kardinalitäten</d:title>
+                  <d:tgroup cols="3">
+                    <d:colspec colname="c1" width="5*" />
+                    <d:colspec colname="c2" width="1*" />
+                    <d:colspec colname="c3" width="1*" />
+                    <d:thead>
+                      <d:row>
+                        <d:entry>Element</d:entry>
+                        <d:entry>Alt</d:entry>
+                        <d:entry>Neu</d:entry>
+                      </d:row>
+                    </d:thead>
+                    <d:tbody>
+                      <d:row>
+                        <d:entry>relation</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..n</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>publication-reference</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..1</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>invention-title</d:entry>
+                        <d:entry>1..n</d:entry>
+                        <d:entry>0..n</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>pct-or-regional-publishing-data</d:entry>
+                        <d:entry>0..1</d:entry>
+                        <d:entry>0..3</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>priority-claims</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..1</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>document-id.country</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..1</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>document-id.doc-number</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..1</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>inventor</d:entry>
+                        <d:entry>1</d:entry>
+                        <d:entry>0..1</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>priority-claims.priority-claim</d:entry>
+                        <d:entry>1..n</d:entry>
+                        <d:entry>0..n</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>citation</d:entry>
+                        <d:entry>1..n</d:entry>
+                        <d:entry>0..n</d:entry>
+                      </d:row>
+                      <d:row>
+                        <d:entry>RelatedDocumentsType</d:entry>
+                        <d:entry>1..n</d:entry>
+                        <d:entry>0..n</d:entry>
+                      </d:row>
+                    </d:tbody>
+                  </d:tgroup>
+                </d:table>
+              </d:listitem>
+              <d:listitem>
+                <d:para>Änderung der Kommentare</d:para>
+              </d:listitem>
+            </d:itemizedlist>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.7</d:revnumber>
+          <d:date>09.06.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revremark>Das Element pct-or-filing-publishing-data wurde in
+            pct-or-regional-filing-data umbenannt.</d:revremark>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.11</d:revnumber>
+          <d:date>16.10.2019</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revremark>Erweiterung EventData um MitteilungESZAusnahmeregelung</d:revremark>
+        </d:revision>
+        -->
+        <d:revision>
+          <d:revnumber>0.8</d:revnumber>
+          <d:date>04.07.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revdescription>
+            <d:itemizedlist>
+              <d:listitem>Fehlerhafte Verschachtelung <d:literal>inventors/inventors</d:literal>
+                korrigiert.</d:listitem>
+              <d:listitem>Neues Attribut <d:literal>schema-version</d:literal> für das Element
+                <d:literal>dpma-patent-document</d:literal>.</d:listitem>
+              <d:listitem>Das Element <d:literal>publication-reference</d:literal> kann nun
+                mehrere
+                Kindelemente <d:literal>document-id</d:literal> enthalten.</d:listitem>
+              <d:listitem>Neues Element <d:literal>national-filing-data</d:literal> für AnmeldetagDE.
+              </d:listitem>
+              <d:listitem>Neues Element <d:literal>date-of-first-publication</d:literal> für den
+                Offenlegungstag.</d:listitem>
+              <d:listitem>Die Kardinalität des Kindelements <d:literal>country</d:literal> innerhalb
+                des Typs RegionalType wurde auf 1..n gesetzt.</d:listitem>
+              <d:listitem>
+                Neues Element
+                <d:literal>due-date-fee</d:literal>
+                für die Jahresgebühr. Das
+                bisherige Element
+                <d:literal>due-date</d:literal>
+                enthält nun das Fälligkeitsdatum.
+              </d:listitem>
+              <d:listitem>
+                Neues Element
+                <d:literal>application-reference-basic-patent</d:literal>
+                für
+                das Aktenzeichen des Grundpatents bei Schutzzertifikaten.
+              </d:listitem>
+            </d:itemizedlist>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.9</d:revnumber>
+          <d:date>11.08.2011</d:date>
+          <d:authorinitials>MF</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              Die Kardinalitäten der Element
+              <d:literal>parent-doc</d:literal>
+              und
+              <d:literal>child-doc</d:literal>
+              innerhalb des Typs
+              <d:literal>RelationType</d:literal>
+              wurden von 1 auf 1..n geändert.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+         <d:revision>
+          <d:revnumber>0.12</d:revnumber>
+          <d:date>12.11.2020</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              VST R072 und R159 entfernt.
+            </d:para>
+            <d:para>
+              VST R425, R426, R427, R428, R429, R430, R456 und R457 hinzugefügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.13</d:revnumber>
+          <d:date>24.05.2022</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              VST R451 hinzugefügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.14</d:revnumber>
+          <d:date>10.08.2022</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              VST R458, R459, R460, R461, R462, R463 (alle Einheitspatent) hinzugefügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.15</d:revnumber>
+          <d:date>27.11.2023</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              VST R464 (Einheitspatent) hinzugefügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+         <d:revision>
+          <d:revnumber>0.16</d:revnumber>
+          <d:date>18.04.2024</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              TypeOfIpRightType um Wert einheitspatent ergänzt
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.17</d:revnumber>
+          <d:date>15.01.2025</d:date>
+          <d:authorinitials>US</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+              VST R465 "Antrag auf Wiedereinsetzung zurückgenommen" hinzugefügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+        <d:revision>
+          <d:revnumber>0.18</d:revnumber>
+          <d:date>01.08.2025</d:date>
+          <d:authorinitials>SB</d:authorinitials>
+          <d:revdescription>
+            <d:para>
+                Element "restrictions-on-disposal" für Verfügungsbeschränkungen inkl. Unterelementen und Typen eingfügt.
+            </d:para>
+          </d:revdescription>
+        </d:revision>
+      </d:revhistory>
+    </xs:documentation>
+  </xs:annotation>
+  
+  <xs:element name="dpma-patent-document">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="bibliographic-data" type="BibliographicDataType" />
+        <xs:element name="events" type="EventsType" minOccurs="0"
+          maxOccurs="1" />
+      </xs:sequence>
+      <xs:attribute name="schema-version" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="AddressbookType">
+    <xs:sequence>
+      <xs:element name="text" type="xs:string" />
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="address" type="AddressType" />
+    </xs:sequence>
+    <xs:attribute name="lang" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="address-1" type="xs:string" minOccurs="0" />
+      <xs:element name="country" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AdditionType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>ZusatzanmeldungenAKZ</d:title>
+          <d:varlistentry>
+            <d:term>Patente (ZusatzanmeldungenAKZ):</d:term>
+            <d:listitem>Referenz auf AKZ der Zusatzanmeldung; die
+              Anmeldung ist
+              die Hauptanmeldung und im DPMAregister werden
+              0-n zu dieser
+              Hauptanmeldung gemachte Zusatzanmeldungen referenziert.
+            </d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="relation" type="RelationType" minOccurs="0"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AgentsType">
+    <xs:sequence>
+      <xs:element name="agent" type="AgentType" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Daten zu den einzelnen Vertretern</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AgentType">
+    <xs:sequence>
+      <xs:element name="addressbook" type="AddressbookType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ApplicantsType">
+    <xs:sequence>
+      <xs:element name="applicant" type="ApplicantType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ApplicantType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>AnmelderInhaber</d:title>
+          <d:varlistentry>
+            <d:term>Patente (AnmelderInhaber):</d:term>
+            <d:listitem>Name, Sitz und Länderkürzel (nach WIPO
+              Standard ST.3) des
+              aktuellen Anmelders;
+              Details zur
+              Anmelder Historie mit Datum der
+              Rechtsübergänge sind in
+              den Verfahrensständen
+              ersichtlich
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Ergänzendes Schutzzertifikat (AnmelderInhaber):</d:term>
+            <d:listitem>Name und vollständige Anschrift des aktuellen
+              Anmelders;
+              Details zur Anmelder
+              Historie mit Datum der
+              Rechtsübergänge sind in
+              den Verfahrensständen ersichtlich;
+              vollständige
+              Anschrift ist für
+              Schutzzertifikate durch das
+              Gesetzt gefordert</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AnmelderInhaber):</d:term>
+            <d:listitem>Name, Sitz und Länderkürzel (nach WIPO
+              Standard ST.3) des
+              aktuellen Anmelders;
+              Details zur
+              Anmelder Historie mit Datum der
+              Rechtsübergänge sind in
+              den Verfahrensständen
+              ersichtlich
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Topografien (Topografien - AnmelderInhaber):</d:term>
+            <d:listitem>Name, Sitz und Länderkürzel (nach WIPO
+              Standard ST.3) des
+              aktuellen Anmelders;
+              Details zur
+              Anmelder Historie mit Datum der
+              Rechtsübergänge sind in
+              den Verfahrensständen
+              ersichtlich
+              Funktionale
+              Anforderungen: [ID:13988] Recherchesystem /
+              Expertensprache,
+              [ID:14008] Suchfelder, [ID:14023] 24 Informationen
+              zu
+              Verfahren (AnmelderInhaber): Neuer
+              Anmelder/Inhaber
+						</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="addressbook" type="AddressbookType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+    <xs:attribute name="app-type">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="applicant" />
+          <xs:enumeration value="applicant-inventor" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="ApplicationReferenceType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Aktenzeichen</d:title>
+
+          <d:varlistentry>
+            <d:term>Patente (AktenzeichenDE):</d:term>
+            <d:listitem>Nationales Aktenkennzeichen der Anmeldung.</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Patente (AktenzeichenEP):</d:term>
+            <d:listitem>Aktenkennzeichen des Europäischen Patentamts
+              für die
+              Anmeldung; ist noch kein
+              deutsches
+              Aktenkennzeichen vergeben wird
+              die Akte unter der
+              Veröffentlichungsnummer und dem
+              EP-Aktenzeichen
+              geführt.
+              Funktionale Anforderungen [ID:13988] Recherchesystem /
+              Expertensprache [ID:14008] Suchfelder [ID:14023]
+              7</d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Patente (AktenzeichenWO):</d:term>
+            <d:listitem>Internationales Aktenkennzeichen der WIPO für
+              die
+              Anmeldung; ist noch kein
+              deutsches Aktenkennzeichen
+              vergeben wird
+              die Akte unter der Veröffentlichungsnummer
+              und dem
+              PCT-Aktenzeichen
+              geführt.</d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Ergänzendes Schutzzertifikat (AktenzeichenDE):</d:term>
+            <d:listitem>Nationales Aktenkennzeichen des Schutzzertifikats
+            </d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AktenzeichenDE):</d:term>
+            <d:listitem>Nationales Aktenkennzeichen des
+              Gebrauchsmuster
+            </d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AktenzeichenEP):</d:term>
+            <d:listitem>Referenz auf Aktenkennzeichen des Europäischen
+              Patentamts, das mit dem
+              Gebrauchmuster verknüpft
+              ist.</d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AktenzeichenWO):</d:term>
+            <d:listitem>Referenz auf internationales Aktenkennzeichen
+              der WIPO,
+              das mit dem Gebrauchsmuster
+              verknüpft
+              ist</d:listitem>
+          </d:varlistentry>
+
+          <d:varlistentry>
+            <d:term>Topografien (Topografien - AktenzeichenDE):</d:term>
+            <d:listitem>Nationales Aktenkennzeichen der Topografie</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" />
+    <xs:attribute name="appl-type" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="BibliographicDataType">
+    <xs:sequence>
+      <xs:element name="publication-references" type="PublicationReferencesType"
+        minOccurs="0" />
+      <xs:element name="application-reference" type="ApplicationReferenceType"
+        minOccurs="1" maxOccurs="3" />
+      <xs:element name="invention-title" type="InventionTitleType"
+        minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="classifications-ipcr" type="ClassificationsIpcrType"
+        minOccurs="0" />
+      <xs:element name="pct-or-regional-publishing-data" type="PctOrRegionalPublishingDataType"
+        minOccurs="0" maxOccurs="3" />
+      <xs:element name="pct-or-regional-filing-data" type="PctOrRegionalFilingDataType"
+        minOccurs="0" maxOccurs="3" />
+      <xs:element name="parties" type="PartiesType" minOccurs="0" />
+      <xs:element name="references-cited" type="ReferencesCitedType"
+        minOccurs="0" />
+      <xs:element name="priority-claims" type="PriorityClaimsType"
+        minOccurs="0" />
+      <xs:element name="designation-of-states" type="DesignationOfStatesType"
+        minOccurs="0" />
+      <xs:element name="office-specific-bib-data" type="OfficeSpecificBibDataType" />
+      <xs:element name="related-documents" type="RelatedDocumentsType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Abzweigungen</d:title>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (AbzweigungAusAKZ):</d:term>
+                <d:listitem> Referenz auf AKZ einer Patentanmeldung aus
+                  der der
+                  Anmeldetag beansprucht wird;
+                  das zugehörige AKZ der
+                  Patentanmeldung wird hier
+                  referenziert.</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Patente (AbzweigungInAKZ):</d:term>
+                <d:listitem>Referenz auf AKZ eines Gebrauchsmuster; zur
+                  Anmeldung wurde ein
+                  Gebrauchsmuster
+                  abgezweigt; das zugehörige
+                  AKZ des Gebrauchsmusters
+                  wird hier referenziert; Details wie
+                  Datum der Abzweigung sind den Verfahrensständen zu
+                  entnehmen;
+                  nicht für EPÜ-Patente
+								</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="BoldType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+      <xs:element name="smallcaps" type="SmallCapitalsType" />
+      <xs:element name="sup" type="SuperscriptedType" />
+      <xs:element name="sub" type="SubscriptedType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="ClassificationsIpcrType">
+    <xs:sequence>
+      <xs:element name="classification-ipcr" type="ClassificationIpcrType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" />
+  </xs:complexType>
+
+  <xs:complexType name="ClassificationIpcrType">
+    <xs:sequence>
+      <xs:element name="text" type="xs:string" />
+      <xs:element name="ipc-version-indicator" type="xs:string" />
+      <xs:element name="symbol-position" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ChildDocType">
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CitationType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Entgegenhaltungen</d:title>
+          <d:varlistentry>
+            <d:term>Patente (Entgegenhaltungen):</d:term>
+            <d:listitem>Referenz auf 0-n ermittelte Entgegenhaltungen;
+              dabei
+              können die Entgegenhaltungen
+              einerseits durch eine
+              amtliche
+              Recherche ermittelt oder in Einspruchsverfahren,
+              Beschwerdeverfahren, etc. vorgebracht worden sein, handelt
+              es sich
+              bei den Dokumenten um
+              Patentliteratur, so wird die
+              entsprechende
+              Dok-ID angegeben; Das Format der zitierten
+              Dokumente sollte den
+              Vorgaben der Hausverfügung 15
+              entsprechen.</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (Entgegenhaltungen):</d:term>
+            <d:listitem>Referenz auf 0-n ermittelte Entgegenhaltungen;
+              dabei
+              können die Entgegenhaltungen
+              einerseits durch eine
+              amtliche
+              Recherche ermittelt oder im Löschungsverfahren
+              vorgebracht
+              worden
+              sein, handelt es sich bei den Dokumenten
+              um Patentliteratur, so
+              wird die entsprechende
+              Dok-ID
+              angegeben; Das Format der zitierten
+              Dokumente sollte den
+              Vorgaben der Hausverfügung 15
+              entsprechen.
+            </d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="patcit" type="PatcitType" minOccurs="0"
+        maxOccurs="unbounded" />
+      <xs:element name="nplcit" type="NplcitType" minOccurs="0"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CorrespondenceAddressType">
+    <xs:sequence>
+      <xs:element name="addressbook" type="AddressbookType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DesignationOfStatesType">
+    <xs:sequence>
+      <xs:element name="designation-pct" type="DesignationPctType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DesignationPctType">
+    <xs:sequence>
+      <xs:element name="regional" type="RegionalType" minOccurs="0"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DivisionType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>TeilungAusAKZ</d:title>
+          <d:varlistentry>
+            <d:term>Patente (TeilungAusAKZ):</d:term>
+            <d:listitem>Referenz auf AKZ der ursprünglichen Anmeldung;
+              die
+              Anmeldung ist durch eine Teilung
+              oder Ausscheidung
+              entstanden; im
+              DPMAregister wird das AKZ der
+              ursprünglichen Anmeldung
+              referenziert; Details wie Datum
+              der Teilung oder Ausscheidung sind
+              den Verfahrensständen
+              zu
+              entnehmen; es wird nicht zwischen Teilung
+              und
+              Ausscheidung differenziert; nicht für
+              EPÜ-Patente</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (TeilungAusAKZ):</d:term>
+            <d:listitem>Referenz auf AKZ der ursprünglichen
+              Gebrauchsmusteranmeldung; das Gebrauchsmuster
+              ist durch
+              eine Teilung
+              oder Ausscheidung entstanden; Funktionale
+              Anforderungen [ID:13988]
+              Recherchesystem / Expertensprache
+              [ID:14008] Suchfelder [ID:14023]
+              32 im DPMAregister wird
+              das AKZ der ursprünglichen Anmeldung
+              referenziert;
+              zwischen Ausscheidung und Teilung wird
+              nicht
+              differenziert; Details wie Datum der Teilung/Ausscheidung
+              sind den
+              Verfahrensständen zu
+              entnehmen;</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+        <d:variablelist>
+          <d:title>TeilungAusAKZ</d:title>
+          <d:varlistentry>
+            <d:term>Patente (TeilungInAKZ):</d:term>
+            <d:listitem>Referenz auf AKZ einer Teilanmeldung oder
+              einer
+              Ausscheidungsanmeldung; die
+              Anmeldung wurde in 0-n
+              weitere
+              Anmeldungen geteilt/ausgeschieden; im DPMAregister
+              werden die
+              0-n
+              AKZ referenziert, in die die Anmeldung
+              geteilt wurde; Details wie
+              Datum der
+              Teilung/Ausscheidung
+              sind den Verfahrensständen zu
+              entnehmen; es wird nicht
+              zwischen Teilung
+              und Ausscheidung
+              differenziert; nicht für
+              EPÜ-Patente</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (TeilungInAKZ):</d:term>
+            <d:listitem>Referenz auf AKZ einer Teilanmeldung oder
+              Ausscheidungsanmeldung; das
+              Gebrauchsmuster wurde in 0-n
+              weitere
+              Anmeldungen geteilt; im DPMAregister werden die
+              0-n AKZ
+              referenziert, in die die Anmeldung
+              geteilt/ausgeschieden wurde;
+              zwischen Ausscheidung und
+              Teilung wird nicht differenziert; Details
+              wie Datum der
+              Teilung/Ausscheidung sind den
+              Verfahrensständen zu
+              entnehmen;</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="relation" type="RelationType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DocumentIdType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Kann je nach Kontext eine Dokumentennummer oder ein Aktenzeichen
+          darstellen und
+          enthält
+          je nach Kontext Angeben zu Land (C), Datum (D)
+          und eine
+          Dokumentennummer/Veröffentlichungsnummer/Aktenzeichen (N):
+        </d:para>
+        <d:itemizedlist>
+          <d:listitem>application-reference.documet-id: Das Aktenzeichen
+            (EP,WO,DE) (C,N)
+          </d:listitem>
+          <d:listitem>pct-or-regional-publishing-data.document-id: Die
+            Veröffentlichungsnummer
+            (EP,WO,DE)
+            (C,N)</d:listitem>
+          <d:listitem>pct-or-regional-filing-data.document-id: Anmeldetag
+            (EP,WO,DE) (C,D)
+          </d:listitem>
+          <d:listitem>pct-or-regional-publishing-data.document-id:
+            Offenlegungstag (DE) (C,D)
+          </d:listitem>
+          <d:listitem>priority-claim (C,D,N)</d:listitem>
+          <d:listitem>related-documents.utility-model-basis.relation.parent-doc.document-id
+            (C,N)
+          </d:listitem>
+          <d:listitem>related-documents.utility-model-basis.relation.child-doc.document-id
+            (C,N)
+          </d:listitem>
+          <d:listitem>related-documents.division.relation.parent-doc.document-id
+            (C,N)</d:listitem>
+          <d:listitem>related-documents.division.relation.child-doc.document-id
+            (C,N)</d:listitem>
+          <d:listitem>references-cited.citation.patcit.document-id (N)
+          </d:listitem>
+        </d:itemizedlist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="country" type="xs:string" minOccurs="0" />
+      <xs:element name="doc-number" type="xs:string" minOccurs="0" />
+      <xs:element name="kind" type="xs:string" minOccurs="0" />
+      <xs:element name="name" type="NameType" minOccurs="0" />
+      <xs:element name="date" type="xs:date" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="lang" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="EventsType">
+    <xs:sequence>
+      <xs:element name="event-data" type="EventDataType"  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Daten zum jeweiligen Verfahren, enthält immer einen
+              Verfahrensstand
+              (procedural-status) und je nach Art des Verfahrens
+              optionale Felder:</d:para>
+            <d:itemizedlist>
+              <d:listitem>type-of-procedure (Verfahrensart)</d:listitem>
+              <d:listitem>date-of-procedural-status</d:listitem>
+              <d:listitem>date-of-capture</d:listitem>
+              <d:listitem>publication-info</d:listitem>
+              <d:listitem>ipc-main-class</d:listitem>
+              <d:listitem>previous-ipc-main-class</d:listitem>
+              <d:listitem>ipc-secondary-classes</d:listitem>
+              <d:listitem>previous-ipc-secondary-classes</d:listitem>
+              <d:listitem>applicants</d:listitem>
+              <d:listitem>previous-applicants</d:listitem>
+              <d:listitem>inventors</d:listitem>
+              <d:listitem>previous-inventors</d:listitem>
+              <d:listitem>representative</d:listitem>
+              <d:listitem>previous-representative</d:listitem>
+              <d:listitem>published-documents</d:listitem>
+              <d:listitem>third-party-request</d:listitem>
+              <d:listitem>bpatg-file-number</d:listitem>
+              <d:listitem>suspended-until</d:listitem>
+              <d:listitem>information</d:listitem>
+              <d:listitem>date-of-receipt</d:listitem>
+              <d:listitem>basic-patent-file-number</d:listitem>
+              <d:listitem>date-last-register-update</d:listitem>              
+            </d:itemizedlist>
+            <d:para>So enthält beispielsweise eine Vertreteränderung die Felder
+              representative und
+              previous-representative. Einige der Felder
+              werden erst in Zukunft geliefert.</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EventDataType">
+    <xs:sequence>
+      <xs:element name="type-of-procedure" type="TypeOfProcedureType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Verfahrensart (Verfahrensart): Verfahrensart
+              Informationen zu
+              Verfahren (Verfahrensart): Gruppierung der Verfahrensstände
+            </d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="procedural-status" type="ProceduralStatusType">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Informationen zu Verfahren (Verfahrensstand): Das Attribut
+              enthält einen
+              Schlüssel
+              (Rxxx) für den jeweiligen Verfahrensstand.
+              Mögliche Werte: R000 - R436, R999</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="date-of-procedural-status" type="xs:date"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>VerfahrensstandsTag</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="date-of-capture" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>ErstmaligeBereitstellung</d:title>
+              <d:varlistentry>
+                <d:term>Patente (ErstmaligeBereitstellung):</d:term>
+                <d:listitem>Datum der erstmaligen Bereitstellung für
+                  DPMAregister. Datum darf nicht
+                  überschrieben
+                  werden. Das Datum
+                  soll nicht angezeigt werden. Es wird
+                  lediglich für den
+                  Monitoring Mode und
+                  DPMAkurier-Recherchen herangezogen.
+                </d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (ErstmaligeBereitstellung):
+                </d:term>
+                <d:listitem>Datum der erstmaligen Bereitstellung für
+                  DPMAregister. Datum darf nicht
+                  überschrieben
+                  werden. Das Datum
+                  soll nicht angezeigt werden. Es wird
+                  lediglich für den
+                  Monitoring Mode und
+                  DPMAkurier-Recherchen herangezogen.
+                </d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (ErstmaligeBereitstellung):</d:term>
+                <d:listitem>Datum der erstmaligen Bereitstellung für
+                  DPMAregister. Datum darf nicht
+                  überschrieben
+                  werden. Das Datum
+                  soll nicht angezeigt werden. Es
+                  wird lediglich für den
+                  Monitoring Mode und
+                  DPMAkurier-Recherchen herangezogen.
+                </d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Topografien (Topografien - ErstmaligeBereitstellung):
+                </d:term>
+                <d:listitem>Datum der erstmaligen Bereitstellung für
+                  DPMAregister. Datum darf nicht
+                  überschrieben
+                  werden. Das Datum
+                  soll nicht angezeigt werden. Es wird
+                  lediglich für den
+                  Monitoring Mode und
+                  DPMAkurier-Recherchen herangezogen.
+                </d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Informationen zu Verfahren (EDVErfassungsTag):</d:term>
+                <d:listitem>Technisches Abschlussdatum. Es wird
+                  insbesondere für
+                  den Monitoring Mode und
+                  DPMAkurier-Recherchen herangezogen.
+                </d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="publication-info" type="PublicationInfoType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>VeroeffentlichungsInfo</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ipc-main-class" type="IpcClassType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>IPCHauptklasse</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="previous-ipc-main-class" type="IpcClassType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>FruehereIPCHauptklasse</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ipc-secondary-classes" type="IpcSecondaryClassesType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>IPCNebenklassen</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="previous-ipc-secondary-classes" type="IpcSecondaryClassesType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>FruehereIPCNebenklassen</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="applicants" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>AnmelderInhaberListe</d:para>
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="applicant" type="xs:string" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="applicants-structured" type="ApplicantsType" minOccurs="0" />
+      
+      <xs:element name="previous-applicants" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Informationen zu Verfahren (FruehererAnmelderInhaber):
+              Früherer
+              Anmelder/Inhaber
+						</d:para>
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="applicant" type="xs:string" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="previous-applicants-structured" type="ApplicantsType" minOccurs="0" />
+      
+      <xs:element name="inventors" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>ErfinderListe</d:para>
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="inventor" type="xs:string" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="inventors-structured" type="InventorsType" minOccurs="0" />
+      
+      <xs:element name="previous-inventors" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Informationen zu Verfahren (FruehererErfinder): Früherer
+              Erfinder</d:para>
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="inventor" type="xs:string" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="previous-inventors-structured" type="InventorsType" minOccurs="0" />
+      
+      <xs:element name="representative" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Vertreter</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="representative-structured" type="AgentsType" minOccurs="0" />
+      
+      <xs:element name="representative-type" type="DpmaAgentType" minOccurs="0">
+      <xs:annotation>
+          <xs:documentation>
+            <d:para>Typ des Elements representative (Vertretertyp)</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="previous-representative" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Informationen zu Verfahren (FruehererVertreter): Früherer
+              Vertreter</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="previous-representative-structured" type="AgentsType" minOccurs="0" />
+      
+      <xs:element name="previous-representative-type" type="DpmaAgentType" minOccurs="0">
+      <xs:annotation>
+          <xs:documentation>
+            <d:para>Typ des Elements previous-representative (Vertretertyp)</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="published-documents" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>VeroeffentlichteDokumente</d:para>
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="document" type="xs:string" maxOccurs="unbounded">
+              <xs:annotation>
+                <xs:documentation>
+                  <d:para>NormierteDokId</d:para>
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="third-party-request" type="xs:boolean"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>AntragDritter</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="bpatg-file-number" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>BPatGAKZ</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="suspended-until" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>AusgesetztBis</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="information" minOccurs="0" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Information</d:title>
+              <d:varlistentry>
+                <d:term>Informationen zu Verfahren (Information):</d:term>
+                <d:listitem>Informationen zur Kleinteilepublikation
+                  "Sonstiges"
+                </d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="date-of-receipt" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>EingangsTag</d:title>
+              <d:varlistentry>
+                <d:term>Informationen zu Verfahren (EingangsTag):</d:term>
+                <d:listitem>Eingangsdatum: Registerereignisnummer (z.T. mehrfach
+                  in verschiedenen
+                  Registerereignisgruppen): R061, R062,
+                  R090,
+                  R091, R088, R089, R065, R057, R084, R085, R086,
+                  R087, R012,
+                  R013, R021, R022, R023,
+                  R161, R162</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="basic-patent-file-number" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>GrundpatentAKZ</d:title>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (GrundpatentAKZ):</d:term>
+                <d:listitem>Referenz auf AKZ des Grundpatents des
+                  Schutzzertifikats. Informationen zu
+                  Verfahren
+                  (GrundpatentAKZ):
+                  Aktenzeichen rundpatent,
+                  Registerereignisnummer (z.T. mehrfach
+                  in
+                  verschiedenen
+                  Registerereignisgruppen): R06</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      
+      <xs:element name="MitteilungESZAusnahmeregelung" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+     		 <xs:element name="Eingangsdatum" type="xs:date" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="NameAnschriftHerstellers" type="xs:string" minOccurs="0" maxOccurs="1" />
+			 <xs:element name="Mitteilungsart" type="MESZAMitteilungszweckType" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="Herstellungszweck" type="MESZAHerstellungszweckType" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="Herstellungsmitgliedstaat" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="HerstellungsmitgliedstaatErteiltesZertifikat" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="MitgliedstaatErsteVerbundenenHandlung" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="MitgliedstaatErsteVerbundenenHandlungVorHerstellungErteiltesZertifikat" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			 <xs:element name="GenehmigungInverkehrbringenAusfuhrdrittland" type="xs:string" minOccurs="0" maxOccurs="1"/>
+   		   </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      
+      <xs:element name="date-last-register-update" type="xs:date" minOccurs="0" />
+      
+    </xs:sequence>
+  </xs:complexType>
+
+  <!--  gazette-reference -->
+  <xs:complexType name="GazetteReferenceType">
+    <xs:sequence>
+      <xs:element name="gazette-num" type="xs:string" />
+      <xs:element name="date" type="xs:date" />
+      <xs:element name="text" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" />
+    <xs:attribute name="country" type="xs:string" />
+    <xs:attribute name="lang" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="InventionTitleType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+      <xs:element name="sup" type="SuperscriptedType" />
+      <xs:element name="sub" type="SubscriptedType" />
+    </xs:choice>
+    <xs:attribute name="id" type="xs:ID" />
+    <xs:attribute name="lang" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="InventorsType">
+    <xs:sequence>
+      <xs:element name="inventor" type="InventorType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InventorType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Erfinder</d:title>
+          <d:varlistentry>
+            <d:term>Erfinder (Erfinder - ErfinderContent):</d:term>
+            <d:listitem>Erfindercontent</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Informationen zu Verfahren (Erfinder):</d:term>
+            <d:listitem>Neuer Erfinder</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="addressbook" type="AddressbookType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ItalicType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+      <xs:element name="smallcaps" type="SmallCapitalsType" />
+      <xs:element name="sup" type="SuperscriptedType" />
+      <xs:element name="sub" type="SubscriptedType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="NameType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name-type">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="legal" />
+              <xs:enumeration value="natural" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="NplcitType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>EntgegenhaltugNPL.Zitat</d:title>
+          <d:varlistentry>
+            <d:term>Entgegenhaltung NPL (Entgegenhaltung NPL - Zitat):</d:term>
+            <d:listitem>Entgegenhaltung NPL Referenz ermittelte
+              Entgegenhaltungen; dabei können die Entgegenhaltungen einerseits
+              durch eine amtliche Recherche ermittelt oder im Löschungsverfahren
+              vorgebracht worden sein, bei Nicht-Patentliteratur erfolgt nur ein
+              entsprechendes Literaturzitat</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="text" type="xs:string" />
+      <xs:element name="relevance-ind" type="RelevanzindikatorEnumType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="OfficeSpecificBibDataType">
+    <xs:sequence>
+      <xs:element name="type-of-ip-right" type="TypeOfIpRightType" />
+      <xs:element name="status" type="StatusType" />
+      <xs:element name="inventor" type="DpmaInventorType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="agent-type" type="DpmaAgentType" minOccurs="0" />
+      <xs:element name="application-reference-basic-patent" type="ApplicationReferenceType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Aktenzeichen des Grundpatents bei Schutzzertifikaten.</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="national-filing-data" type="xs:date"
+        minOccurs="0" />
+      <xs:element name="date-of-first-publication" type="xs:date"
+        minOccurs="0" />
+      <xs:element name="exhibition-priorities" type="ExhibitionPrioritiesType"
+        minOccurs="0" />
+      <xs:element name="ursurpation-priorities" type="UrsurpationPrioritiesType"
+        minOccurs="0" />
+      <xs:element name="design-priorities" type="DesignPrioritiesType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Liste der Geschmacksmusterprioritäten</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="license" type="LicenseType" minOccurs="0" />
+      <xs:element name="funding-id" type="FundingIdType" minOccurs="0" />
+
+     <xs:element name="restrictions-on-disposal" type="RestrictionsOnDisposalType" minOccurs="0" />
+      
+      <xs:element name="due-date" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Datum der Fälligkeit: Es werden
+              Patente,Gebrauchsmuster und
+              Schutzzertifikate
+              durchsucht.</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="due-date-fee" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Jahresgebühr (Jahresgebühr - JahresNummer): Es werden
+              Patente, Gebrauchsmuster und
+              Schutzzertifikate
+              durchsucht.</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="file-number-of-protection-certificate" type="FileNumberOfProtectionCertificateType"
+        minOccurs="0" />
+      <xs:element name="bpatg-file-number" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Aktenzeichen beim Bundespatentgericht</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="abstract" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Zusammenfassung</d:title>
+              <d:varlistentry>
+                <d:term>Patente (Zusammenfassung):</d:term>
+                <d:listitem>Zusammenfassung der Anmeldung; ist eine
+                  Zusammenfassung vorhanden, aber nicht im
+                  DV-Bestand erfolgt ein
+                  entsprechender Hinweis; ist
+                  eine zur Zusammenfassung zugehörige
+                  Zeichnung vorhanden, so erfolgt ein entsprechender
+                  Hinweis.
+                </d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="date-of-publication-of-grant" type="xs:date"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>VeroeffentlichungErteilungsTag, Veröffentlichungstag der
+              Erteilung</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="published-epwo-documents" type="PublishedEpwoDocumentsType"
+        minOccurs="0" />
+      <xs:element name="language-of-publication-ep" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>VeroeffentlichungsspracheEP</d:title>
+              <d:varlistentry>
+                <d:term>Patente (VeroeffentlichungsspracheEP):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an;
+                  nur für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (VeroeffentlichungsspracheEP):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an;
+                  nur für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="language-of-publication-wo" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Veroeffentlichungssprache</d:title>
+              <d:varlistentry>
+                <d:term>Patente (VeroeffentlichungsspracheEP):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an; nur
+                  für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Patente (VeroeffentlichungsspracheWO):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an; nur
+                  für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (VeroeffentlichungsspracheEP):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an; nur
+                  für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (VeroeffentlichungsspracheWO):</d:term>
+                <d:listitem>gibt die Veröffentlichungssprache an; nur
+                  für EPÜ
+                  Patente oder PCT-Anmeldungen
+								</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cancellation-file-number" type="CancellationFileNumberType"
+        minOccurs="0" />
+      <xs:element name="usage-of-certificate" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Verwendung</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="product-name" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>BenzeichnungErzeugnis</d:title>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (BezeichnungErzeugnis):
+                </d:term>
+                <d:listitem>Bezeichnung des Erzeugnis des zum
+                  Schutzzertifikats
+                  gehörenden Grundpatents
+								</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="title-of-basic-patent" type="xs:string"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>BezeichnungGrundpatent</d:title>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (BezeichnungGrundpatent):
+                </d:term>
+                <d:listitem>Bezeichnung/Titel des zum
+                  Schutzzertifikats
+                  gehörenden
+                  Grundpatents.</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="start-of-term-of-protection" type="xs:date"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>LaufzeitBeginn</d:title>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (LaufzeitBeginn):</d:term>
+                <d:listitem>Laufzeitbeginn des
+                  Schutzzertifikats laut
+                  Erteilungbeschluss</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="end-of-term-of-protection" type="xs:date"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>LaufzeitEnde</d:title>
+              <d:varlistentry>
+                <d:term>Ergänzendes Schutzzertifikat (LaufzeitEnde):</d:term>
+                <d:listitem>Laufzeitende des
+                  Schutzzertifikats laut
+                  Erteilungbeschluss</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="publication-of-date-of-registration" type="xs:date"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>EintragungsTag</d:title>
+              <d:varlistentry>
+                <d:term>Gebrauchsmuster (EintragungsTag):</d:term>
+                <d:listitem>Eintragungstag des Gebrauchsmusters</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Topografien (Topografien - EintragungsTag):</d:term>
+                <d:listitem>Eintragungstag für die Topografie</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="domestic-authorisations" type="DomesticAuthorisationsType"
+        minOccurs="0" />
+      <xs:element name="eu-authorisations" type="EuAuthorisationsType"
+        minOccurs="0" />  
+    <xs:element name="date-pct-national-phase-entry-pat" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Datum PCT Eintritt in die nationale Phase Pat</d:para>
+          </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="date-pct-national-phase-entry-gbm" type="xs:date" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Datum PCT Eintritt in die nationale Phase Gbm</d:para>
+          </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="date-last-register-update" type="xs:date" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OverscoreType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="smallcaps" type="SmallCapitalsType" />
+      <xs:element name="sup" type="SuperscriptedType" />
+      <xs:element name="sub" type="SubscriptedType" />
+    </xs:choice>
+    <xs:attribute name="ostyle" default="single">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="single" />
+          <xs:enumeration value="double" />
+          <xs:enumeration value="dash" />
+          <xs:enumeration value="dots" />
+          <xs:enumeration value="leftarrow" />
+          <xs:enumeration value="rightarrow" />
+          <xs:enumeration value="leftrightarrow" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="PatcitType">
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+      <xs:element name="relevance-ind" type="RelevanzindikatorEnumType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ParentDocType">
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PartiesType">
+    <xs:sequence>
+      <xs:element name="applicants" type="ApplicantsType" minOccurs="0" />
+      <xs:element name="inventors" type="InventorsType" minOccurs="0" />
+      <xs:element name="correspondence-address" type="CorrespondenceAddressType"
+        minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Zustelladresse (verkürzt)</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="agents" type="AgentsType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Liste der Vertreter</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PctOrRegionalFilingDataType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>AnmeldeTag</d:title>
+          <d:varlistentry>
+            <d:term>Patente (AnmeldeTagDE):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Patente (AnmeldeTagEP):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung; bei EP-
+              und/oder
+              PCT-Anmeldung wird hier der
+              internationale
+              Anmeldetag angegeben
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Patente (AnmeldeTagWO):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung; bei EP-
+              und/oder
+              PCT-Anmeldung wird hier der
+              internationale
+              Anmeldetag angegeben
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Ergänzendes Schutzzertifikat (AnmeldeTagDE):</d:term>
+            <d:listitem>Antragsdatum des Schutzzertifikats;</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AnmeldeTagDE):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung DE</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AnmeldeTagEP):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung EP</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (AnmeldeTagWO):</d:term>
+            <d:listitem>wirksamer Anmeldetag der Anmeldung WO</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Topografien (Topografien - AnmeldeTagDE):</d:term>
+            <d:listitem>Anmeldedatum für die Topografie</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PctOrRegionalPublishingDataType">
+    <xs:annotation>
+      <xs:documentation></xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PriorityClaimsType">
+    <xs:sequence>
+      <xs:element name="priority-claim" type="PriorityClaimType"
+        minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PriorityClaimType">
+    <xs:sequence>
+      <xs:element name="country" type="xs:string" minOccurs="0" />
+      <xs:element name="date" type="xs:date" minOccurs="0" />
+      <xs:element name="doc-number" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="PublicationReferencesType">
+    <xs:sequence>
+      <xs:element name="publication-reference" type="PublicationReferenceType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PublicationReferenceType">
+    <xs:sequence>
+      <xs:element name="document-id" type="DocumentIdType" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" />
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ReferencesCitedType">
+    <xs:sequence>
+      <xs:element name="citation" type="CitationType" minOccurs="0"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="hash" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="RegionalType">
+    <xs:sequence>
+      <xs:element name="region" type="RegionType" />
+      <xs:element name="country" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RegionType">
+    <xs:sequence>
+      <xs:element name="country" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RelatedDocumentsType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="utility-model-basis" type="UtilityModelBasisType" />
+      <xs:element name="division" type="DivisionType" />
+      <xs:element name="addition" type="AdditionType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="RelationType">
+    <xs:sequence>
+      <xs:element name="parent-doc" type="ParentDocType" maxOccurs="unbounded"/>
+      <xs:element name="child-doc" type="ChildDocType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="RelevanzindikatorEnumType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="Undefined" />
+			<xs:enumeration value="X" />
+			<xs:enumeration value="Y" />
+			<xs:enumeration value="A" />
+			<xs:enumeration value="O" />
+			<xs:enumeration value="P" />
+			<xs:enumeration value="T" />
+			<xs:enumeration value="E" />
+			<xs:enumeration value="D" />
+			<xs:enumeration value="L" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+  <xs:complexType name="SmallCapitalsType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="SubscriptedType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+      <xs:element name="sup2" type="Superscripted2Type" />
+      <xs:element name="sub2" type="Subscripted2Type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="SuperscriptedType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+      <xs:element name="sup2" type="Superscripted2Type" />
+      <xs:element name="sub2" type="Subscripted2Type" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="Subscripted2Type" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="Superscripted2Type" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="u" type="UnderscoreType" />
+      <xs:element name="o" type="OverscoreType" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="UnderscoreType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="b" type="BoldType" />
+      <xs:element name="i" type="ItalicType" />
+      <xs:element name="smallcaps" type="SmallCapitalsType" />
+      <xs:element name="sup" type="SuperscriptedType" />
+      <xs:element name="sub" type="SubscriptedType" />
+    </xs:choice>
+    <xs:attribute name="style" default="single">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="single" />
+          <xs:enumeration value="double" />
+          <xs:enumeration value="dash" />
+          <xs:enumeration value="dots" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="UtilityModelBasisType">
+    <xs:sequence>
+      <xs:element name="relation" type="RelationType" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!-- DPMA spezifische Elements -->
+
+  <xs:complexType name="CancellationFileNumberType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>SchutzzertifikatAKZ</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="file-number" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DesignPrioritiesType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>GeschmacksmusterPrioritaeten, Geschmacksmusterprioritäten
+        </d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="design-priority" type="DesignPriorityType"
+        maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Daten zu den einzelnen Geschmacksmusterprioritäten</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DesignPriorityType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>GeschmacksmusterPrioritaet, Geschmacksmusterprioritäten</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="file-number" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Aktenzeichen</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="priority-date" type="PriorityDateType" />
+      <xs:element name="country" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Land</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="DomesticAuthorisationsType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>GenehmigungenInland</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="domestic-authorisation" type="DomesticAuthorisationType"
+        maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Schutzzertifikat Genehmigung Inland</d:title>
+              <d:varlistentry>
+                <d:term>Stelle (office)</d:term>
+                <d:listitem>Hinweis auf die Stelle, die die Genehmigung für das
+                  in
+                  Verkehrbringen des
+                  Erzeugnis
+                  im Inland erstellt hat.
+                </d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Datum (date)</d:term>
+                <d:listitem>Hinweis auf das Ausstellungsdatum der Genehmigung
+                  für das in
+                  Verkehrbringen des
+                  Erzeugnis im Innland</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DomesticAuthorisationType">
+    <xs:sequence>
+      <xs:element name="office" type="xs:string" />
+      <xs:element name="number" type="xs:string" />
+      <xs:element name="date" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:simpleType name="DpmaInventorSimpleType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Erfinder</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="erfinder-nichtnennung" />
+      <xs:enumeration value="erfinder-benennung-nicht-vorliegend" />
+      <xs:enumeration value="erfinder-ist-anmelder" />
+      <xs:enumeration value="erfinder" />
+      <xs:enumeration value="erfinder-teilnichtnennung" />
+      <xs:enumeration value="erfinder-ortsnichtnennung" />
+      <xs:enumeration value="erfinder-ortsteilnichtnennung" />
+      <xs:enumeration value="erfinder-teilnichtnennung-und-ortsteilnichtnennung" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:complexType name="DpmaInventorType">
+    <xs:simpleContent>
+      <xs:extension base="DpmaInventorSimpleType">
+        <xs:attribute name="sequence" type="xs:unsignedShort" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  
+  <xs:simpleType name="DpmaAgentType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Vertreter</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="kein-vertreter-bestellt" />
+      <xs:enumeration value="vertreter" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:complexType name="EuAuthorisationsType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>GenehmigungenEU</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="eu-authorisation" type="EuAuthorisationType"
+        maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>Schutzzertifikat Genehmigung EU</d:title>
+              <d:varlistentry>
+                <d:term>Land (country):</d:term>
+                <d:listitem>Genehmigung EU Land</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Nummer (number):</d:term>
+                <d:listitem>Hinweis auf die Nummer der Genehmigung für das in
+                  Verkehrbringen des
+                  Erzeugnis in
+                  der EU</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Stelle (office)</d:term>
+                <d:listitem>Genehmigung EU Stelle Hinweis auf die Stelle, die
+                  die Genehmigung für
+                  das in
+                  Verkehrbringen des Erzeugnis in der
+                  EU erstellt hat</d:listitem>
+              </d:varlistentry>
+              <d:varlistentry>
+                <d:term>Dateum (date)</d:term>
+                <d:listitem>Hinweis auf das Ausstellungsdatum der Genehmigung
+                  für das in
+                  Verkehrbringen des
+                  Erzeugnis in der EU</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EuAuthorisationType">
+    <xs:sequence>
+      <xs:element name="office" type="xs:string" />
+      <xs:element name="number" type="xs:string" />
+      <xs:element name="date" type="xs:string" />
+      <xs:element name="country" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="ExhibitionPrioritiesType">
+    <xs:sequence>
+      <xs:element name="exhibition-priority" type="ExhibitionPriorityType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ExhibitionPriorityType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Ausstellungspriorität</d:title>
+          <d:varlistentry>
+            <d:term>Ausstellungspriorität (Ausstellungspriorität - Ausstellung):
+            </d:term>
+            <d:listitem>Name der
+              Ausstellung. Durchsucht werden Patente und
+              Gebrauchsmuster.</d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Ausstellungspriorität (Ausstellungspriorität -
+              PrioritaetsTag):</d:term>
+            <d:listitem>Prioritätstag. Durchsucht werden Patente und
+              Gebrauchsmuster.</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="exhibition" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Ausstellung</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="priority-date" type="PriorityDateType" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+
+  <xs:complexType name="FileNumberOfProtectionCertificateType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>SchutzzertifikatAKZ</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="file-number" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="FundingIdType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Foerderkennziffer</d:title>
+          <d:varlistentry>
+            <d:term>Patente (Foerderkennziffer):</d:term>
+            <d:listitem>Gibt die Förderkennziffer von geförderten Vorhaben
+              an
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Ergänzendes Schutzzertifikat (Foerderkennziffer):</d:term>
+            <d:listitem>Gibt die Förderkennziffer von geförderten
+              Vorhaben an
+            </d:listitem>
+          </d:varlistentry>
+          <d:varlistentry>
+            <d:term>Gebrauchsmuster (Foerderkennziffer):</d:term>
+            <d:listitem>Gibt die Förderkennziffer von geförderten
+              Vorhaben an
+            </d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string" />
+  </xs:simpleType>
+
+    <xs:complexType name="RestrictionsOnDisposalType">
+        <xs:sequence>
+            <xs:element name="restriction-on-disposal" type="RestrictionOnDisposalType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionOnDisposalType">
+        <xs:sequence>
+            <xs:element name="proportional" type="ProportionalEnumType" />
+            <xs:element name="type-of-limitation" type="TypeOfLimitationEnumType" />
+            <xs:element name="date-of-registration" type="xs:date" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="ProportionalEnumType">
+        <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="ja" />
+            <xs:enumeration value="nein" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TypeOfLimitationEnumType">
+        <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="verpfaendung" />
+            <xs:enumeration value="zwangsvollstreckung" />
+            <xs:enumeration value="sonstiges-dingliches-recht" />
+        </xs:restriction>
+    </xs:simpleType>
+  
+  <xs:simpleType name="PriorityDateType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>PrioritaetsTag</d:title>
+          <d:varlistentry>
+            <d:term>PrioritaetsTag: Prioritätstag</d:term>
+            <d:listitem>Durchsucht
+              werden Patente und Gebrauchsmuster.
+            </d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:date" />
+  </xs:simpleType>
+
+  <xs:complexType name="IpcClassType">
+    <xs:sequence>
+      <xs:element name="ipc-symbol" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>IPCSymbol</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ipc-version" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>IPCVersion</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IpcSecondaryClassesType">
+    <xs:sequence>
+      <xs:element name="ipc-calls" type="IpcClassType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="LicenseType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Lizenz</d:title>
+          <d:varlistentry>
+            <d:term>Lizenz (Lizenz - Lizenzerklaerung):</d:term>
+            <d:listitem>Lizenzerklärung Es werden Patente,
+              Gebrauchsmuster und
+              Schutzzertifikate
+              durchsucht.</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="lizenzbereitschaftserklaerung-vorhanden" />
+      <xs:enumeration value="lizenzinteresseerklaerung-vorhanden" />
+      <xs:enumeration value="ausschliessliche-lizenz-vorhanden" />
+      <xs:enumeration value="zwangslizenz-vorhanden" />
+      <xs:enumeration value="gefoerdertes-vorhaben" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PartType">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="teil-1" />
+      <xs:enumeration value="teil-2" />
+      <xs:enumeration value="teil-3" />
+      <xs:enumeration value="teil-4" />
+      <xs:enumeration value="teil-5" />
+      <xs:enumeration value="teil-6" />
+      <xs:enumeration value="teil-7" />
+      <xs:enumeration value="teil-8" />
+      <xs:enumeration value="teil-9" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ProceduralStatusType">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="R000" />
+      <xs:enumeration value="R001" />
+      <xs:enumeration value="R002" />
+      <xs:enumeration value="R003" />
+      <xs:enumeration value="R004" />
+      <xs:enumeration value="R005" />
+      <xs:enumeration value="R006" />
+      <xs:enumeration value="R007" />
+      <xs:enumeration value="R008" />
+      <xs:enumeration value="R009" />
+      <xs:enumeration value="R010" />
+      <xs:enumeration value="R011" />
+      <xs:enumeration value="R012" />
+      <xs:enumeration value="R013" />
+      <xs:enumeration value="R015" />
+      <xs:enumeration value="R016" />
+      <xs:enumeration value="R017" />
+      <xs:enumeration value="R018" />
+      <xs:enumeration value="R019" />
+      <xs:enumeration value="R020" />
+      <xs:enumeration value="R021" />
+      <xs:enumeration value="R022" />
+      <xs:enumeration value="R023" />
+      <xs:enumeration value="R024" />
+      <xs:enumeration value="R025" />
+      <xs:enumeration value="R026" />
+      <xs:enumeration value="R027" />
+      <xs:enumeration value="R028" />
+      <xs:enumeration value="R029" />
+      <xs:enumeration value="R030" />
+      <xs:enumeration value="R031" />
+      <xs:enumeration value="R032" />
+      <xs:enumeration value="R033" />
+      <xs:enumeration value="R034" />
+      <xs:enumeration value="R035" />
+      <xs:enumeration value="R036" />
+      <xs:enumeration value="R037" />
+      <xs:enumeration value="R038" />
+      <xs:enumeration value="R039" />
+      <xs:enumeration value="R040" />
+      <xs:enumeration value="R042" />
+      <xs:enumeration value="R043" />
+      <xs:enumeration value="R044" />
+      <xs:enumeration value="R045" />
+      <xs:enumeration value="R046" />
+      <xs:enumeration value="R047" />
+      <xs:enumeration value="R048" />
+      <xs:enumeration value="R049" />
+      <xs:enumeration value="R050" />
+      <xs:enumeration value="R051" />
+      <xs:enumeration value="R052" />
+      <xs:enumeration value="R053" />
+      <xs:enumeration value="R055" />
+      <xs:enumeration value="R056" />
+      <xs:enumeration value="R057" />
+      <xs:enumeration value="R058" />
+      <xs:enumeration value="R059" />
+      <xs:enumeration value="R060" />
+      <xs:enumeration value="R061" />
+      <xs:enumeration value="R062" />
+      <xs:enumeration value="R064" />
+      <xs:enumeration value="R065" />
+      <xs:enumeration value="R067" />
+      <xs:enumeration value="R068" />
+      <xs:enumeration value="R069" />
+      <xs:enumeration value="R070" />
+      <xs:enumeration value="R071" />
+      <xs:enumeration value="R073" />
+      <xs:enumeration value="R074" />
+      <xs:enumeration value="R075" />
+      <xs:enumeration value="R076" />
+      <xs:enumeration value="R077" />
+      <xs:enumeration value="R078" />
+      <xs:enumeration value="R079" />
+      <xs:enumeration value="R080" />
+      <xs:enumeration value="R081" />
+      <xs:enumeration value="R082" />
+      <xs:enumeration value="R083" />
+      <xs:enumeration value="R084" />
+      <xs:enumeration value="R085" />
+      <xs:enumeration value="R086" />
+      <xs:enumeration value="R087" />
+      <xs:enumeration value="R088" />
+      <xs:enumeration value="R089" />
+      <xs:enumeration value="R090" />
+      <xs:enumeration value="R091" />
+      <xs:enumeration value="R092" />
+      <xs:enumeration value="R093" />
+      <xs:enumeration value="R094" />
+      <xs:enumeration value="R095" />
+      <xs:enumeration value="R096" />
+      <xs:enumeration value="R097" />
+      <xs:enumeration value="R098" />
+      <xs:enumeration value="R099" />
+      <xs:enumeration value="R100" />
+      <xs:enumeration value="R101" />
+      <xs:enumeration value="R102" />
+      <xs:enumeration value="R103" />
+      <xs:enumeration value="R104" />
+      <xs:enumeration value="R105" />
+      <xs:enumeration value="R106" />
+      <xs:enumeration value="R107" />
+      <xs:enumeration value="R108" />
+      <xs:enumeration value="R110" />
+      <xs:enumeration value="R111" />
+      <xs:enumeration value="R112" />
+      <xs:enumeration value="R113" />
+      <xs:enumeration value="R114" />
+      <xs:enumeration value="R115" />
+      <xs:enumeration value="R116" />
+      <xs:enumeration value="R117" />
+      <xs:enumeration value="R118" />
+      <xs:enumeration value="R119" />
+      <xs:enumeration value="R120" />
+      <xs:enumeration value="R123" />
+      <xs:enumeration value="R124" />
+      <xs:enumeration value="R125" />
+      <xs:enumeration value="R126" />
+      <xs:enumeration value="R127" />
+      <xs:enumeration value="R129" />
+      <xs:enumeration value="R130" />
+      <xs:enumeration value="R131" />
+      <xs:enumeration value="R132" />
+      <xs:enumeration value="R135" />
+      <xs:enumeration value="R136" />
+      <xs:enumeration value="R137" />
+      <xs:enumeration value="R138" />
+      <xs:enumeration value="R139" />
+      <xs:enumeration value="R140" />
+      <xs:enumeration value="R141" />
+      <xs:enumeration value="R142" />
+      <xs:enumeration value="R143" />
+      <xs:enumeration value="R144" />
+      <xs:enumeration value="R146" />
+      <xs:enumeration value="R147" />
+      <xs:enumeration value="R148" />
+      <xs:enumeration value="R150" />
+      <xs:enumeration value="R151" />
+      <xs:enumeration value="R152" />
+      <xs:enumeration value="R153" />
+      <xs:enumeration value="R155" />
+      <xs:enumeration value="R156" />
+      <xs:enumeration value="R157" />
+      <xs:enumeration value="R158" />
+      <xs:enumeration value="R160" />
+      <xs:enumeration value="R163" />
+      <xs:enumeration value="R165" />
+      <xs:enumeration value="R166" />
+      <xs:enumeration value="R167" />
+      <xs:enumeration value="R168" />
+      <xs:enumeration value="R169" />
+      <xs:enumeration value="R170" />
+      <xs:enumeration value="R171" />
+      <xs:enumeration value="R172" />
+      <xs:enumeration value="R173" />
+      <xs:enumeration value="R174" />
+      <xs:enumeration value="R175" />
+      <xs:enumeration value="R176" />
+      <xs:enumeration value="R178" />
+      <xs:enumeration value="R179" />
+      <xs:enumeration value="R182" />
+      <xs:enumeration value="R184" />
+      <xs:enumeration value="R185" />
+      <xs:enumeration value="R186" />
+      <xs:enumeration value="R187" />
+      <xs:enumeration value="R188" />
+      <xs:enumeration value="R189" />
+      <xs:enumeration value="R190" />
+      <xs:enumeration value="R191" />
+      <xs:enumeration value="R192" />
+      <xs:enumeration value="R193" />
+      <xs:enumeration value="R194" />
+      <xs:enumeration value="R195" />
+      <xs:enumeration value="R196" />
+      <xs:enumeration value="R197" />
+      <xs:enumeration value="R199" />
+      <xs:enumeration value="R200" />
+      <xs:enumeration value="R201" />
+      <xs:enumeration value="R202" />
+      <xs:enumeration value="R203" />
+      <xs:enumeration value="R204" />
+      <xs:enumeration value="R205" />
+      <xs:enumeration value="R206" />
+      <xs:enumeration value="R207" />
+      <xs:enumeration value="R208" />
+      <xs:enumeration value="R209" />
+      <xs:enumeration value="R210" />
+      <xs:enumeration value="R211" />
+      <xs:enumeration value="R212" />
+      <xs:enumeration value="R213" />
+      <xs:enumeration value="R214" />
+      <xs:enumeration value="R215" />
+      <xs:enumeration value="R216" />
+      <xs:enumeration value="R217" />
+      <xs:enumeration value="R218" />
+      <xs:enumeration value="R219" />
+      <xs:enumeration value="R220" />
+      <xs:enumeration value="R221" />
+      <xs:enumeration value="R222" />
+      <xs:enumeration value="R223" />
+      <xs:enumeration value="R224" />
+      <xs:enumeration value="R225" />
+      <xs:enumeration value="R226" />
+      <xs:enumeration value="R227" />
+      <xs:enumeration value="R228" />
+      <xs:enumeration value="R229" />
+      <xs:enumeration value="R230" />
+      <xs:enumeration value="R231" />
+      <xs:enumeration value="R400" />
+      <xs:enumeration value="R401" />
+      <xs:enumeration value="R402" />
+      <xs:enumeration value="R403" />
+      <xs:enumeration value="R404" />
+      <xs:enumeration value="R405" />
+      <xs:enumeration value="R406" />
+      <xs:enumeration value="R407" />
+      <xs:enumeration value="R408" />
+      <xs:enumeration value="R409" />
+      <xs:enumeration value="R410" />
+      <xs:enumeration value="R411" />
+      <xs:enumeration value="R412" />
+      <xs:enumeration value="R413" />
+      <xs:enumeration value="R414" />
+      <xs:enumeration value="R415" />
+      <xs:enumeration value="R420" />
+      <xs:enumeration value="R421" />
+      <xs:enumeration value="R422" />
+      <xs:enumeration value="R423" />
+      <xs:enumeration value="R424" />
+      <xs:enumeration value="R425" />
+      <xs:enumeration value="R426" />
+      <xs:enumeration value="R427" />
+      <xs:enumeration value="R428" />
+      <xs:enumeration value="R429" />
+      <xs:enumeration value="R430" />
+      <xs:enumeration value="R431" />
+      <xs:enumeration value="R432" />
+      <xs:enumeration value="R433" />
+      <xs:enumeration value="R434" />
+      <xs:enumeration value="R435" />
+      <xs:enumeration value="R436" />
+      <xs:enumeration value="R437" />
+      <xs:enumeration value="R438" />
+      <xs:enumeration value="R439" />
+      <xs:enumeration value="R440" />
+      <xs:enumeration value="R441" />
+	  <xs:enumeration value="R443" />
+	  <xs:enumeration value="R445" />
+	  <xs:enumeration value="R446" />
+	  <xs:enumeration value="R447" />
+	  <xs:enumeration value="R448" />
+	  <xs:enumeration value="R449" />
+	  <xs:enumeration value="R450" />
+	  <xs:enumeration value="R451" />
+	  <xs:enumeration value="R452" />
+	  <xs:enumeration value="R453" />
+	  <xs:enumeration value="R454" />
+	  <xs:enumeration value="R455" />
+	  <xs:enumeration value="R456" />
+	  <xs:enumeration value="R457" />
+	  <xs:enumeration value="R458" />
+	  <xs:enumeration value="R459" />
+	  <xs:enumeration value="R460" />
+	  <xs:enumeration value="R461" />
+	  <xs:enumeration value="R462" />
+	  <xs:enumeration value="R463" />
+	  <xs:enumeration value="R464" />
+	  <xs:enumeration value="R465" />
+      <xs:enumeration value="R999" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="PublicationInfoType">
+    <xs:sequence>
+      <xs:element name="issue-number" minOccurs="0" type="xs:unsignedShort">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Heftnummer</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="year" minOccurs="0" type="xs:unsignedShort">
+        <xs:annotation>
+          <xs:documentation>
+            <d:variablelist>
+              <d:title>VeroeffentlichnungsInfo.Jahr</d:title>
+              <d:varlistentry>
+                <d:term>Veröffentlichungsinfo (Veröffentlichungsinfo - Jahr):
+                </d:term>
+                <d:listitem>Heftjahr: Jahresangabe zur Publikation</d:listitem>
+              </d:varlistentry>
+            </d:variablelist>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="publication-date" minOccurs="0" type="xs:date">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>VeroeffentlichungsTag</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="publication-type" type="TypeOfPublicationType"
+        minOccurs="0">
+      </xs:element>
+      <xs:element name="part" type="PartType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <d:para>Heftteil</d:para>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PublishedEpwoDocumentsType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>VeroeffentlichteEPWODokumente</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="dokid" type="xs:string" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="StatusType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:variablelist>
+          <d:title>Status</d:title>
+          <d:varlistentry>
+            <d:term>Status (Status - Status):</d:term>
+            <d:listitem>Status Patent, Gebrauchsmuster, Schutzzertifikat,
+              etc. Es
+              werden Patente, Gebrauchsmuster, Schutzzertifikate
+              und Topografien
+              durchsucht.</d:listitem>
+          </d:varlistentry>
+        </d:variablelist>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="anhaengig-in-kraft" />
+      <xs:enumeration value="nicht-anhaengig-erloschen" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TypeOfIpRightType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Schutzrechtsart</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="gebrauchsmuster" />
+      <xs:enumeration value="patent" />
+      <xs:enumeration value="schutzzertifikat" />
+      <xs:enumeration value="topografie" />
+      <xs:enumeration value="einheitspatent" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TypeOfProcedureType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Verfahrensart</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="anmelderaenderung" />
+      <xs:enumeration value="beschraenkungsverfahren" />
+      <xs:enumeration value="einspruchsverfahren" />
+      <xs:enumeration value="erfinderaenderung" />
+      <xs:enumeration value="gebrauchsmusterloeschungverfahren" />
+      <xs:enumeration value="gebrauchsmusterverfahren" />
+      <xs:enumeration value="klassifikationsaenderung" />
+      <xs:enumeration value="lizenzerklaerungen" />
+      <xs:enumeration value="nichtigkeitsverfahren" />
+      <xs:enumeration value="pruefungsverfahren" />
+      <xs:enumeration value="publikationen" />
+      <xs:enumeration value="rechercheverfahren" />
+      <xs:enumeration value="schutzzertifikatsverfahren" />
+      <xs:enumeration value="topografieloeschungsverfahren" />
+      <xs:enumeration value="topografieverfahren" />
+      <xs:enumeration value="verfahren-einheitspatent" />
+      <xs:enumeration value="verfahren-ep-anmeldung" />
+      <xs:enumeration value="verfahren-pct-anmeldung" />
+      <xs:enumeration value="vertreteraenderung" />
+      <xs:enumeration value="verwaltungsverfahren" />
+      <xs:enumeration value="vorverfahren" />
+      <xs:enumeration value="widerrufsverfahren" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TypeOfPublicationType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>Publikationsart</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="grossteile-publikation" />
+      <xs:enumeration value="kleinteile-publikation" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="UrsurpationPrioritiesType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>EntnahmePrioritaeten, Entnahmeprioritäten</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ursurpation-priority" type="UrsurpationPriorityType"
+        maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UrsurpationPriorityType">
+    <xs:annotation>
+      <xs:documentation>
+        <d:para>EntnahmePrioritaet, Entnahmepriorität</d:para>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="file-number" type="xs:string" />
+      <xs:element name="priority-date" type="PriorityDateType" />
+    </xs:sequence>
+    <xs:attribute name="sequence" type="xs:unsignedShort" />
+  </xs:complexType>
+  
+  <xs:simpleType name="MESZAMitteilungszweckType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="unbekannt" />
+			<xs:enumeration value="neue-mitteilung" />
+			<xs:enumeration value="aktualisierung-bestehende-mitteilung" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="MESZAHerstellungszweckType">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="unbekannt" />
+			<xs:enumeration value="ausfuhr" />
+			<xs:enumeration value="lagerung" />
+			<xs:enumeration value="ausfuhr-lagerung" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>

@@ -1,0 +1,25 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+.DS_Store
+Thumbs.db
+*.out
+coverage.html
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.claude/
+
+# Demo output
+demo/demo
+demo/*.xml
+demo/*.zip
+demo/*.pdf
+demo/examples/

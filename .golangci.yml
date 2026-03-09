@@ -1,0 +1,51 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocritic
+    - revive
+    - misspell
+    - unconvert
+    - unparam
+    - bodyclose
+
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+      disabled-checks:
+        - hugeParam
+    revive:
+      rules:
+        - name: blank-imports
+        - name: exported
+          arguments:
+            - disableStutteringCheck
+        - name: unused-parameter
+        - name: unreachable-code
+        - name: redefines-builtin-id
+
+  exclusions:
+    generated: lax
+    paths:
+      - generated
+    rules:
+      # streamResponse closes resp.Body; bodyclose can't track ownership through the call
+      - linters: [bodyclose]
+        source: "c\\.generated\\."
+      # Test handlers: http.HandlerFunc signature requires unused params
+      - path: _test\.go
+        linters: [revive]
+        text: "unused-parameter"
+      # Unchecked w.Write in test handlers is fine
+      - path: _test\.go
+        linters: [errcheck]

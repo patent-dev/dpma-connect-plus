@@ -1,0 +1,1352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://www.wipo.int/standards/XMLSchema/trademarks"
+    targetNamespace="http://www.wipo.int/standards/XMLSchema/trademarks"
+    xmlns:DE="http://register.dpma.de/standards/XMLSchema/DE-TM-RegisterExt"
+    elementFormDefault="qualified" attributeFormDefault="unqualified"
+    version="0.1">
+
+    <!-- ********************************************************************** -->
+    <!-- * XSchema Registerdatensatz für nationale deutsche Marken nach WIPO  * -->
+    <!-- * Nach Standard ST.66 Version 1.1                                    * -->
+    <!-- * Version 1.1                                                        * -->
+    <!-- ********************************************************************** -->
+    <xs:annotation xml:lang="de">
+        <xs:documentation>Das XML Schema für die Darstellung der Registerdaten mit Verfahrenshistorie von nationale deutsche Marken.
+        Es können die Registerdaten der registrierten Marken und zusätzlich auch Angaben zu den Stammdaten von laufenden
+        oder nicht zur Eintragung gelangten Anmeldungen dargestellt werden. Das Schema folgt dem WIPO Standard ST.66.</xs:documentation>
+    </xs:annotation>
+
+    <xs:import namespace="http://register.dpma.de/standards/XMLSchema/DE-TM-RegisterExt"
+        schemaLocation="http://register.dpma.de/standards/XMLSchema/DE-TM-RegisterExt-V1-1.xsd" />
+    <xs:include schemaLocation="http://www.wipo.int/standards/XMLSchema/common/ISOCountryCodeType-V2006.xsd" />
+    <xs:include schemaLocation="http://www.wipo.int/standards/XMLSchema/common/ISOCurrencyCodeType-V2001.xsd" />
+    <xs:include schemaLocation="http://www.wipo.int/standards/XMLSchema/common/ISOLanguageCodeType-V2002.xsd" />
+    <xs:include schemaLocation="http://www.wipo.int/standards/XMLSchema/common/WIPOST3CodeType-V2007.xsd" />
+
+    <xs:element name="Transaction" type="TransactionType" />
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf die notwendigen Elemente                                 -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="TransactionType">
+        <xs:sequence>
+            <xs:element name="TransactionHeader" type="TransactionHeaderType" minOccurs="0" />
+            <xs:element name="TradeMarkTransactionBody" type="TransactionBodyType" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert. Keine besonderen Header Angaben sind notwendig.             -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="TransactionHeaderType">
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf Identifier, Transaktionscode und Data                    -->
+    <!-- Auf Error Handling wurde verzichtet, da keine Transaktionen angebildet -->
+    <!-- werden.                                                                -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="TransactionBodyType">
+        <xs:sequence>
+            <xs:element name="TransactionContentDetails">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="TransactionIdentifier" type="xs:string" minOccurs="0">
+                            <xs:annotation xml:lang="de">
+                                <xs:documentation> Interne ID für den erstellten Registerdatensatz. Es wird eindeutig
+                                    eine bestimmte Version des Registerdatenabzuges identifiziert.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="TransactionCode" type="TransactionCodeType" />
+                        <xs:element name="TransactionData" type="TransactionDataType" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf den benötigten Umfang.                                   -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="TransactionDataType">
+        <xs:sequence>
+            <xs:choice minOccurs="1">
+                <xs:element name="TradeMarkDetails">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TradeMark" type="TradeMarkType" minOccurs="1" maxOccurs="unbounded" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf die DPMA Felder, erweitert um zusätzliche Felder         -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="TradeMarkType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation> Die Stammdaten der Marke: Je nach Variante (Eingetragen, Abgelehnte, In Anmeldung) werden
+                bestimmte Datenfelder nicht ausgefüllt. Die Variante kann nach dem Aktenzustand (MarkeCurrentStatusCode)
+                unterschieden werden. Die Stammdaten enthalten über -mark records- die relevantene Ereignisse zur Marke
+                (Verfahrenshistorie/Publikation).</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="RegistrationOfficeCode" type="WIPOST3CodeType">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Kennzeichnung DE wird verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ApplicationNumber" type="xs:string">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Aktenzeichen.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ApplicationDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Tag der Anmeldung.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RegistrationNumber" type="xs:string" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Registernummer. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="RegistrationDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Datum der Eintragung. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExpiryDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Schutzende. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TerminationDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Datum der Löschung. Nur für eingetragene Marken, die gelöscht wurden.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkCurrentStatusCode" type="MarkCurrentStatusCodeType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Aktenzustand der Marke.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="InternationalMarkKey" type="KeyType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Internationale Registrierungen. Angaben zu internationalen
+                        Registrierungen mit Datum sind in einem zweiten Element enthalten.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="KindMark" type="KindMarkType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Kollektivmarken Nein/Ja => Individual/Collective .
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkFeature" type="MarkFeatureType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Markenform.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkDescriptionDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Markenbeschreibung.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="MarkDescription" type="TextType" minOccurs="0" maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="TradeDistinctivenessIndicator" type="xs:boolean" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Kennzeichnung Verkehrsdurchsetzte Marke.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TradeDistinctivenessText" type="TextType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Verkehrsdurchsetzter Bestandteil der Marke.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AsItIsProtectionIndicator" type="xs:boolean" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>TelleQuelle.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OppositionPeriodStartDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Beginn Widerspruchsfrist</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OppositionPeriodEndDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Ablaufs der Widerspruchsfrist</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="WordMarkSpecification" type="WordMarkSpecificationType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Markentext und Transliteration.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkImageDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zum Markenbild.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="MarkImage" type="MarkImageType" maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GoodsServicesDetails" minOccurs="1">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Waren- und Dienstleistungverzeichnis (WDVZ).</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:choice minOccurs="1">
+                            <xs:element name="GoodsServices" type="GoodsServicesType" maxOccurs="unbounded" />
+                        </xs:choice>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PriorityDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Ausländische Prioritäten.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Priority" type="PriorityType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ExhibitionPriorityDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Ausstellungsprioritäten.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ExhibitionPriority" type="ExhibitionPriorityType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SeniorityDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Senioritäten der Marke. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Seniority" type="SeniorityType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublicationDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zur Publikation. In den Stammdaten wird nur das
+                        Veröffentlichungsdatum der Eintragung der Marke gesetzt. Die weiteren Angaben zu Publikationen
+                        sind in der Verfahrenhistorie (MarkRecordDetails) enthalten. Nur für Marken, die eingetragen wurden.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Publication" type="PublicationType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ApplicantDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Anmelder/Inhaber.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Applicant" type="ApplicantType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="RepresentativeDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Vertreter.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Representative" type="RepresentativeType"  maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="CorrespondenceAddress" type="CorrespondenceAddressType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Zustellanschrift.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkRecordDetails" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zu den Ereignissen und Publikationen in der Verfahrenhistorie. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="MarkRecord" type="MarkRecordType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element ref="DE:FileNumber" />
+            <xs:element ref="DE:InternationalMark" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Internationale Marken, die auf dieser Marke basieren. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:RelevantPriorityDate" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Zeitrang. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:ApplicationPublicationDate" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Datum der Bekanntmachung. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:StartProtectionPeriod" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Schutzbeginn. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:RestraintsDisposal" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zu aktiven Verfügungsbeschränkungen. Nur für Marken, die eingetragen wurden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:RefusalGrounds" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zu Zurückweisungsgründen. Nur für Anmeldungen, die
+                    negativ abgeschlossen wurden und den Aktenzustand -Eintragung nicht möglich- haben.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:ApplicationStatus" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zum Verfahrenstand der Anmeldung.  Nur für Anmeldungen, offen sind oder die
+                    negativ abgeschlossen wurden und den Aktenzustand -Eintragung nicht möglich- haben.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Eingschränkt auf Angaben zu Basisrecord                                -->
+    <!-- Erweitert um Angaben zu Verfahren- und Publikationsereignissen DPMA    -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="MarkRecordType">
+        <xs:sequence>
+            <xs:element name="BasicRecord" type="BasicRecordType" />
+            <xs:choice>
+                <xs:element ref="DE:Record1" />
+                <xs:element ref="DE:Record2a" />
+                <xs:element ref="DE:Record2b" />
+                <xs:element ref="DE:Record2c" />
+                <xs:element ref="DE:Record2d" />
+                <xs:element ref="DE:Record2e" />
+                <xs:element ref="DE:Record2f" />
+                <xs:element ref="DE:Record5a" />
+                <xs:element ref="DE:Record5c" />
+                <xs:element ref="DE:Record5d" />
+                <xs:element ref="DE:Record5e" />
+                <xs:element ref="DE:Record5f" />
+                <xs:element ref="DE:Record5g" />
+                <xs:element ref="DE:Record3a" />
+                <xs:element ref="DE:Record3b" />
+                <xs:element ref="DE:Record3c" />
+                <xs:element ref="DE:Record4" />
+                <xs:element ref="DE:Record6Recording" />
+                <xs:element ref="DE:Record6Lifted" />
+                <xs:element ref="DE:Record8a" />
+                <xs:element ref="DE:Record8b" />
+                <xs:element ref="DE:Record8c" />
+                <xs:element ref="DE:Record8d" />
+                <xs:element ref="DE:Record8e" />
+                <xs:element ref="DE:Record9b" />
+                <xs:element ref="DE:RecordReclassification" />
+                <xs:element ref="DE:RecordProcedureIncomplete" />
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <!-- ====================================================================== -->
+    <!-- Diverse Einträge entfernt                          .                   -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="BasicRecordType">
+        <xs:sequence>
+            <xs:element name="RecordIdentifier" type="xs:string" minOccurs="0" />
+            <xs:element name="BasicRecordKind" type="BasicRecordKindType" minOccurs="0" >
+                <xs:annotation xml:lang="de"><xs:documentation>Der Typ der Records</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="RecordReference" type="xs:string" minOccurs="0" >
+                <xs:annotation xml:lang="de"><xs:documentation>Die Kennung des Verfahrens (SID), alle Einträge mit
+                der gleichen SID gehören zu einem Verfahren.</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="RecordPublicationDetails" minOccurs="0">
+                <xs:annotation xml:lang="de"><xs:documentation>
+                Die Angaben zur Publikation der Ereignisse geführt.</xs:documentation></xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="RecordPublication" type="PublicationType" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="RecordCurrentStatusCode" type="RecordCurrentStatusCodeType" minOccurs="0" >
+                <xs:annotation xml:lang="de"><xs:documentation>Der Verfahrenzustand im Abschluss der Ereignisses.
+                Für die Publikation 8e ist dieser Wert nicht gesetzt.</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="RecordCurrentStatusDate" type="xs:date" minOccurs="0" >
+                <xs:annotation xml:lang="de"><xs:documentation>Der Zeitpunkt der Durchführung bzw. des Abschluss.</xs:documentation></xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Werte ersetzt und durch den Verfahrenzustand  ersetzt.                 -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="RecordCurrentStatusCodeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Marke eingetragen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Anmeldeverfahren - Marke eingetragen
+                        (BasicRecordKindType=Eintragung) Detailliert in DE:DE_Record1Type mit Publikationen 1aaa, 1abb,
+                        1b.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Veroeffentlicht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Par 50 Antrag veröffentlicht
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5aType mit Publikation 5a
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Gilt als zurueckgenommen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Antrag gilt als zurückgenommen
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5cType mit Publikation 5c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Zurueckgenommen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Antrag zurückgenommen
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5cType mit Publikation 5c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Zurueckgewiesen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Antrag zurückgewiesen
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5cType mit Publikation 5c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Marke geloescht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Marke gelöscht (BasicRecordKindType=Loeschung
+                        Dritter) Detailliert in DE:DE_Record5dType mit Publikation 5d</xs:documentation>
+                    <xs:documentation>Löschung Antrag Inhaber - Marke geloescht (BasicRecordKindType=Loeschung
+                        Inhaber) Detailliert in DE:DE_Record5fType mit Publikation 5f</xs:documentation>
+                    <xs:documentation>Widerspruch - Marke gelöscht Detailliert in DE:DE_Record2dType mit
+                        Publikation 2d</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Marke teilweise geloescht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Löschung Antrag Dritter - Marke teilweise gelöscht
+                        (BasicRecordKindType=Loeschung Inhaber) Detailliert in DE:DE_Record5eType mit Publikation 5e
+                    </xs:documentation>
+                    <xs:documentation>Löschung Antrag Inhaber - Marke teilweise gelöscht
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5gType mit Publikation 5g
+                    </xs:documentation>
+                    <xs:documentation>Widerspruch - Marke teilweise gelöscht
+                        (BasicRecordKindType=Widerspruch) Detailliert in DE:DE_Record2eType mit Publikation 2e
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Geteilt">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Teilung - Marke/Anmeldung geteilt (BasicRecordKindType=Teilung) Detailliert
+                        in DE:DE_Record3aType mit Publikation 3a</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Teiluebertragen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Teilung - Marke/Anmeldung teilübertragen (BasicRecordKindType=Teilung)
+                        Detailliert in DE:DE_Record3cType mit Publikation 3c</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Gilt als Teilverzicht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Teilung - Teilung - Antrag gilt als Teilverzicht Teilruecknahme (BasicRecordKindType=Teilung)
+                        Der Verfahrensstand kann mit einer 8e Berichtigung der Teilung auftreten.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Gilt als nicht gestellt">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Teilung - Antrag gilt als nicht gestellt(BasicRecordKindType=Teilung)
+                        Der Verfahrensstand kann mit einer 8e Berichtigung der Teilung auftreten.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Senioritaet erfasst">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Seniorität - Seniorität erfasst
+                        (BasicRecordKindType=Senioritaet) Detailliert in DE:DE_Record9bType</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Keine Senioritaet vorhanden">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Umklassifizierung - Keine Senioritaet vorhanden
+                         (BasicRecordKindType=Senioritaet) Detailliert in DE:DE_Record9bType</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Umklassifiziert">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Umklassifizierung - Marke umklassifiziert
+                        (BasicRecordKindType=Umklassifizierung) Detailliert in DE:DE_RecordReclassificationType ohne
+                        Publikation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Umklassifizierung nicht notwendig">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Umklassifizierung - Umklassifizierung nicht notwendig
+                        (BasicRecordKindType=Umklassifizierung) Detailliert in DE:DE_RecordReclassificationType ohne
+                        Publikation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Abgeschlossen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Umschreibung - Umschreibung abgeschlossen
+                        (BasicRecordKindType=Umschreibung) Detailliert in DE:DE_Record3bType mit Publikation 3b,
+                        DE:DE_Record8aType mit Publikation 8a, DE:DE_Record8bType mit Publikation 8b, DE:DE_Record8cType
+                        mit Publikation 8c oder DE:DE_Record8bType mit Publikation 8d.</xs:documentation>
+                    <xs:documentation>Verfuegungsbeschraenkung - Verfahren abgeschlossen
+                        (BasicRecordKindType=Verfuegungsbeschraenkung) Detailliert in DE:DE_Record6RecordingType oder
+                        DE_Record6LiftedType mit Publikation 6</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verlaengert">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Verlaengerung - Schutzdauer der Marke verlaengert
+                        (BasicRecordKindType=Verlaengerung) Detailliert in DE:DE_Record4Type mit Publikation 4
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Widerspruch erhoben">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Widerspruch erhoben (BasicRecordKindType=Widerspruch)
+                        Detailliert in DE:DE_Record2bType mit Publikation 2b</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Marke nicht geloescht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Marke nicht gelöscht (BasicRecordKindType=Widerspruch)
+                        Detailliert in DE:DE_Record2cType mit Publikation 2c</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Marke ohne Widerspruch eingetragen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Marke ohne Widerspruch eingetragen
+                        (BasicRecordKindType=Widerspruch) Detailliert in DE:DE_Record2aType mit Publikation 2a
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verfahren hinfaellig">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Verfahren hinfällig Marke bereits gelöscht
+                        (BasicRecordKindType=Widerspruch)</xs:documentation>
+                    <xs:documentation>Löschung Dritter - Verfahren hinfällig
+                        (BasicRecordKindType=Loeschung Dritter)Detailliert in DE:DE_Record5cType mit Publikation 5c</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Widerspruch zurueckgenommen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Widerspruch zurückgenommen/nicht mehr bestehend
+                        (BasicRecordKindType=Widerspruch) Detailliert in DE:DE_Record2cType mit Publikation 2c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Widerspruch zurueckgewiesen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Widerspruch zurückgewiesen/verworfen
+                        (BasicRecordKindType=Widerspruch) Detailliert in DE:DE_Record2cType mit Publikation 2c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verfahren hinfaellig teilweise geloescht">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Widerspruch - Verfahren hinfaellig Marke bereits teilweise geloescht
+                        (BasicRecordKindType=Widerspruch) Detailliert in DE:DE_Record2cType mit Publikation 2c
+                    </xs:documentation>
+                    <xs:documentation>Löschung dritter - Verfahren hinfaellig Marke bereits teilweise geloescht
+                        (BasicRecordKindType=Loeschung Dritter) Detailliert in DE:DE_Record5cType mit Publikation 5c
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verfahren hinfaellig (Marke bereits geloescht)">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Loeschung Dritter - Verfahren hinfällig Marke bereits gelöscht
+                        (BasicRecordKindType=Loeschung Dritter)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Auf Klage verwiesen">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Loeschung Dritter - Auf Klage verwiesen
+                        (BasicRecordKindType=Loeschung Dritter)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Werte gelöscht und erweitert                                           -->
+    <!-- Wird als Kennzeichnung der Art der Ereignisses verwendet               -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="BasicRecordKindType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Eintragung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit Typ DE:DE_Record1Type mit Publikation in 1aaa,
+                        1abb, 1b oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue Publikationsangaben
+                        bzw. mit unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType verwendet.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Widerspruch">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record2aType, DE:Record2bType,
+                        DE:Record2cType, DE:Record2dType, DE:Record2eType oder DE:Record8eType mit
+                        Publikation in 2a, 2b, 2c, 2d, 2e oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue
+                        Publikationsangaben bzw. mit unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType
+                        verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Loeschung Dritter">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record5aType, DE:Record5cType,
+                        DE:Record5dType, DE:Record5eType oder DE:Record8eType mit Publikation in 5a, 5c, 5d,
+                        5e oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue Publikationsangaben bzw. mit
+                        unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Loeschung Inhaber">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record5fType, DE:Record5gType
+                        oder DE:Record8eType mit Publikation in 5f, 5g oder 8e verwendet. Für Verfahren aus
+                        Altbeständen ohne genaue Publikationsangaben bzw. mit unvollständigen Daten wird
+                        DE:DE_RecordProcedureIncompleteType verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Teilung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record3aType, DE:Record3cType
+                        oder DE:Record8eType mit Publikation in 3a, 3c oder 8e verwendet. Für Verfahren aus
+                        Altbeständen ohne genaue Publikationsangaben bzw. mit unvollständigen Daten wird
+                        DE:DE_RecordProcedureIncompleteType verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Umschreibung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record3bType, DE:Record8aType,
+                        DE:Record8bType, DE:Record8cType, DE:Record8dType oder DE:Record8eType mit
+                        Publikation in 3b,8a,8b,8c,8d oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue
+                        Publikationsangaben bzw. mit unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType
+                        verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verlaengerung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record4Type oder DE:Record8eType
+                        mit Publikation in 4 oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue
+                        Publikationsangaben bzw. mit unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType
+                        verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Verfuegungsbeschraenkung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record6Recording,
+                        DE:Record6Lifting oder DE:Record8eType mit Publikation in 6 oder 8e verwendet. Für Verfahren
+                        aus Altbeständen ohne genaue Publikationsangaben bzw. mit unvollständigen Daten wird
+                        DE:DE_RecordProcedureIncompleteType verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Senioritaet">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:Record9bType oder DE:Record8eType
+                        mit Publikation in 9b oder 8e verwendet. Für Verfahren aus Altbeständen ohne genaue
+                        Publikationsangaben bzw. mit unvollständigen Daten wird DE:DE_RecordProcedureIncompleteType
+                        verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Umklassifizierung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:RecordReclassification verwendet.
+                        Das Verfahren wird aktuell nicht publiziert, so dass keine Angaben zur Publikation vorhanden
+                        sind.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Berichtigung">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Dieser Eintrag wird immer mit den Typen DE:DE:RecordProcedureIncomplete
+                        verwendet. Es handelt sich freie Berichtigungen, die keinem Verfahren zugeordnet werden können.
+                        Die Berichtigungen stamme aus Altdatenbeständen, so dass die Angaben zur Publikation 8e gfs.
+                        unvollständig und die Zuordnung zu einer Verfahresart nicht gegeben ist.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Werte ersetzt                                                          -->
+    <!-- Wird als Aktenzustand interpretiert                                    -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="MarkCurrentStatusCodeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Anmeldung eingegangen" />
+            <xs:enumeration value="Marke eingetragen, Widerspruchsfrist laeuft" />
+            <xs:enumeration value="Marke eingetragen, Widerspruchsverfahren laeuft" />
+            <xs:enumeration value="Marke eingetragen" />
+            <xs:enumeration value="Eintragung nicht moeglich" />
+            <xs:enumeration value="Marke geloescht" />
+            <xs:enumeration value="Akte vernichtet" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Wertemenge auf Indivdual/Collective zusammengestrichen                 -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="KindMarkType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Individual" />
+            <xs:enumeration value="Collective" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Abbildungen der Markenform: Auf die DE Werte gekürzt.                  -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="MarkFeatureType">
+        <xs:union memberTypes="xs:token">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="Word">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Wortmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Figurative">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Bildmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Combined">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Wordbildmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="3-D">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Dreidimensionale Marke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Colour">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Farbmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Sound">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Hörmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Kennfaden">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Kennfadenmarke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Other">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Sonstige Marke</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="Undefined">
+                        <xs:annotation xml:lang="de">
+                            <xs:documentation>Unbekannte Markenform</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Gekürzt auf Markentext, Transliteration und Unterscheidung zur         -->
+    <!-- Wortbildmarke                                                          -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="WordMarkSpecificationType">
+        <xs:sequence>
+            <xs:element name="MarkVerbalElementText" type="TextType">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Markentext, falls vorhanden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkTransliteration" type="MarkTransliterationType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Transliteration, falls vorhanden.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkStandardCharacterIndicator" type="xs:boolean">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Wert ist für Wortmarken immer true, für andere Marken false (z.B.
+                        Wortbildmarke).</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Das Attribut über die Art der Transliteration wird nicht unterstützt.  -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="MarkTransliterationType">
+        <xs:simpleContent>
+            <xs:extension base="xs:token" />
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert                                                              -->
+    <!-- Erweiterung für nicht qualifiziertes WDVZ                              -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="GoodsServicesType">
+        <xs:sequence>
+            <xs:element name="ClassificationKindCode" type="ClassificationKindCodeType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zum NCL Status, falls vorhanden. Es wird immer nach Nizza
+                        klassifiziert, der Wert ist daher Nice.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ClassificationVersion" type="xs:string" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zum NCL Status, falls vorhanden. Es werden die Werte 8 oder 9 für
+                        NCL8 bzw. NCL9 verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ProposedLeadingClassNumber" type="ClassNumberType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Leitklassse, der Typ wird in St66 auch für Prioritäten verwendet,
+                        daher kann die Leitklasse fehlen.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ClassDescriptionDetails">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zum WDVZ. Das WDVZ kann in zwei Formen vorliegen: Gruppiert oder
+                        nicht gruppiert. In der nicht-gruppierten Form sind die Begriffstexte nicht bei der einzelnen
+                        Klasse enthalten. Es gibt anstatt dessen einen Begriffstext für alle Klassen.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ClassDescription" type="ClassDescriptionType" minOccurs="0"
+                            maxOccurs="45" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element ref="DE:GoodsServicesNotClassifiedDescription" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Begriffstext für alle Klassen im nicht-gruppierten WDVZ.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Nach WIPO ST.66 Version 1.1                                            -->
+    <!-- Reduziert auf Klasse und Begriffstext                                  -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="ClassDescriptionType">
+        <xs:sequence>
+            <xs:element name="ClassNumber" type="ClassNumberType" minOccurs="1">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Angabe zu der Klasse.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="GoodsServicesDescription" type="TextType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die textuelle Beschreibung der Begriffe.
+                    In einem nicht-gruppierte WDVZ fehlt dieser Wert.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Nach WIPO ST.66 Version 1.1                                            -->
+    <!-- Reduziert                                                              -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="PriorityType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu ausländischen Prioritäten.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="PriorityCountryCode" type="ExtendedWIPOST3CodeType" minOccurs="0" >
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Ländercode für die Priorität.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PriorityNumber" type="xs:string" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Aktenzeichen bzw. die Registernummer der Priortät.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PriorityDate" type="xs:date">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Datum der Priorität.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PriorityPartialGoodsServices" type="GoodsServicesType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das WDVZ der Prioritaet. Es wird keine Leitklasse verwendet.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:OtherPriorityCountryCode" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation> Für einige wenige Marken aus dem Altbestand sind bei den Länderangaben Angaben Werte
+                        verwendet worden, die nicht in den standardisierten Ländercodes enthalten sind. In diesem Fall wird
+                        diese Feld anstatt dem PriorityCountryCode verwendet, da die Wertemenge von  ExtendedWIPOST3CodeType
+                        nicht erweiterbar ist.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert                                                              -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="SeniorityType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu Senioritäten der Marke.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="SeniorityRegistrationNumber" type="xs:string" minOccurs="1">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Aktenzeichen der Gemeinschaftsmarke.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="SeniorityPublicationDate" type="xs:date" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Veroeffentlichungsdatum der Gemeinschaftsmarke.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="InternationalTradeMarkCode" type="InternationalTradeMarkCodeType" minOccurs="1">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Der Ländercode ist EU.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Unnötige Werte enfernt                                                 -->
+    <!-- Angaben zu WDVZ erlaubt                                                -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="ExhibitionPriorityType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zur Austellungsprioritäten der Marke.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ExhibitionName" type="xs:string" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zur Austellung.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ExhibitionDate" type="xs:date">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das Datum der Austellungspriorität.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element ref="DE:PriorityPartialGoodsServices" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Das WDVZ der Austellungspriorität. Es wird keine Leitklasse verwendet.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Unnötige Werte entfernt.                                               -->
+    <!-- Heftnummer hinzugfügt.                                                 -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="PublicationType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu Publikationen der Marke. Bei Verwendung in den Markenstammdaten wird nur
+                das Datum der Veröffentlichung der Eintragung verwendet.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="PublicationIdentifier" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Angaben zu der Heftnummer der Veröffentlichung, z.B. 2008-43.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9][0-9][0-9][0-9]-[0-9][0-9]" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="PublicationSection" type="PublicationSectionType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Veröffentlich in Teil. Angaben zu der Art der Veröffentlichung.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="PublicationDate" type="xs:date">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Tag der Veröffentlichung der Eintragung.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Wertemenge durch die für DE relevanten ersetzt.                        -->
+    <!-- ====================================================================== -->
+
+    <xs:simpleType name="PublicationSectionType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Die Wertemenge für die Angabe zum Teil der Veröffentlichung.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="1aaa" />
+            <xs:enumeration value="1abb" />
+            <xs:enumeration value="1b" />
+            <xs:enumeration value="2a" />
+            <xs:enumeration value="2b" />
+            <xs:enumeration value="2c" />
+            <xs:enumeration value="2d" />
+            <xs:enumeration value="2e" />
+            <xs:enumeration value="2f" />
+            <xs:enumeration value="3a" />
+            <xs:enumeration value="3b" />
+            <xs:enumeration value="3c" />
+            <xs:enumeration value="4" />
+            <xs:enumeration value="5a" />
+            <xs:enumeration value="5c" />
+            <xs:enumeration value="5d" />
+            <xs:enumeration value="5e" />
+            <xs:enumeration value="5f" />
+            <xs:enumeration value="5g" />
+            <xs:enumeration value="6" />
+            <xs:enumeration value="8a" />
+            <xs:enumeration value="8b" />
+            <xs:enumeration value="8c" />
+            <xs:enumeration value="8d" />
+            <xs:enumeration value="8e" />
+            <xs:enumeration value="9b" />
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert (offen als base64Binary oder Datei-Referenz).                -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="MarkImageType">
+        <xs:sequence>
+            <xs:element name="MarkImageFilename" type="xs:string" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Referenz zu den Bildaten, falls diese nicht eingebunden sind.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkImageFileFormat" type="FileFormatType" minOccurs="0" />
+            <xs:element name="MarkImageColourIndicator" type="xs:boolean" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Farbige Eintragung.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkImageColourClaimedText" type="TextType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Bezeichnung der Farben .</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkImageRepresentationSize" type="RepresentationSizeType" minOccurs="0" />
+            <xs:element name="MarkImageCategory" type="MarkImageCategoryType" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Wiener Bildklassifikation .</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="MarkImageBinary" type="xs:base64Binary" minOccurs="0">
+                <xs:annotation xml:lang="de">
+                    <xs:documentation>Die Bildaten, falls keine Referenz vorhanden ist.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <!-- ====================================================================== -->
+    <!-- Version entfällt                                                       -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="MarkImageCategoryType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu Wiener Bildklassen.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="CategoryKind" type="CategoryKindType" minOccurs="1" />
+            <xs:element name="CategoryCodeDetails">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="CategoryCode" type="CategoryCodeType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="CategoryCodeType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Die Bildklasse in numerische Form dargestellt.</xs:documentation>
+        </xs:annotation>
+        <xs:union memberTypes="xs:token">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[0-9][0-9].[0-9][0-9].[0-9][0-9]|[0-9][0-9].[0-9][0-9]" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="CategoryKindType">
+        <xs:union memberTypes="xs:token">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="Vienna" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="ClassNumberType">
+        <xs:union memberTypes="xs:token NiceClassNumberType" />
+    </xs:simpleType>
+
+    <xs:simpleType name="NiceClassNumberType">
+        <xs:restriction base="xs:nonNegativeInteger">
+            <xs:maxInclusive value="45" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf Nice und Other                                           -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="ClassificationKindCodeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Nice" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="RepresentationSizeType">
+        <xs:sequence>
+            <xs:element name="Height" type="xs:integer" minOccurs="0" />
+            <xs:element name="Width" type="xs:integer" minOccurs="0" />
+            <xs:element name="Unit" type="UnitType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="InternationalTradeMarkCodeType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Für Senioritäten ist der Wert immer EU sein.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="EU" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ====================================================================== -->
+    <!-- Der Key entfällt. Das Attribut  operationCode entfällt.                -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="ApplicantType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu Anmelder/Inhaber.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ApplicantAddressBook" type="AddressBookType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Der Key entfällt. Das Attribut  operationCode entfällt.                -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="RepresentativeType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zum Vertreter.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="RepresentativeAddressBook" type="AddressBookType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Der Identifier entfällt.                                              -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="CorrespondenceAddressType">
+        <xs:annotation xml:lang="de">
+            <xs:documentation>Angaben zu Zustelladresse.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="CorrespondenceAddressBook" type="AddressBookType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf Freiformat-Addresszeilen                                 -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="AddressBookType">
+        <xs:sequence>
+            <xs:choice minOccurs="0">
+                <xs:element name="FreeFormatAddressDetails">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="FreeFormatNameAddressLine" type="TextType" maxOccurs="unbounded" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="FormattedNameAddress" type="FormattedNameAddressType" />
+            </xs:choice>
+            <xs:element name="PostalAddress" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FormattedNameAddressType">
+        <xs:sequence>
+            <xs:element name="Name" type="NameType" minOccurs="0" />
+            <xs:element name="Address" type="AddressType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Reduziert auf Freiformat Namenstyp                                     -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="NameType">
+        <xs:sequence>
+            <xs:element name="FreeFormatName" type="FreeFormatNameType" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Eingeschränkt auf Frei-Format, Typisierung der Namenselemente entfällt -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="FreeFormatNameType">
+        <xs:sequence>
+            <xs:element name="FreeFormatNameDetails" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="FreeFormatNameLine" type="TextType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Eingeschränkt auf eine Frei-Format Adresse                             -->
+    <!-- ====================================================================== -->
+    <xs:complexType name="AddressType">
+        <xs:sequence>
+            <xs:element name="AddressCountryCode" type="ISOCountryCodeType" minOccurs="0" />
+            <xs:element name="FreeFormatAddress" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="FreeFormatAddressLine" type="TextType" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="FormattedAddress" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="AddressLine" type="TextType" minOccurs="0" maxOccurs="unbounded" />
+                        <xs:element name="AddressMailCode" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressPostOfficeBox" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressRoom" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressFloor" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressBuilding" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressStreet" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressCity" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressCounty" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressState" type="xs:string" minOccurs="0" />
+                        <xs:element name="AddressPostcode" type="xs:string" minOccurs="0" />
+                        <xs:element name="FormattedAddressCountryCode" type="ISOCountryCodeType" minOccurs="0" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ====================================================================== -->
+    <!-- Eingeschränkt: Der Code  ist immer Trade Mark Information              -->
+    <!-- ====================================================================== -->
+    <xs:simpleType name="TransactionCodeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Trade Mark Information" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="KeyType">
+        <xs:sequence>
+            <xs:element name="Identifier" type="IdentifierType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="IdentifierType">
+        <xs:simpleContent>
+            <xs:extension base="xs:token">
+                <xs:attribute name="identifierKindCode" type="WIPOST3CodeType" use="optional" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="FileFormatType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="JPEG" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="TextType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="languageCode" type="xs:language" use="optional" />
+                <xs:attribute name="sequenceNumber" type="xs:integer" use="optional" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="UnitType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Centimetre" />
+            <xs:enumeration value="Inch" />
+            <xs:enumeration value="Pixel" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ExtendedWIPOST3CodeType">
+        <xs:union memberTypes="WIPOST3CodeType WIPOFormerST3CodeType" />
+    </xs:simpleType>
+
+    <xs:simpleType name="WIPOFormerST3CodeType">
+        <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="CS" />
+            <xs:enumeration value="DL" />
+            <xs:enumeration value="DD" />
+            <xs:enumeration value="SU" />
+            <xs:enumeration value="YD" />
+            <xs:enumeration value="YU" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

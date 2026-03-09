@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <publication-references>
+         <publication-reference sequence="1">
+            <document-id>
+               <country>DE</country>
+               <doc-number>000010027360</doc-number>
+               <kind>A1</kind>
+            </document-id>
+         </publication-reference>
+      </publication-references>
+      <application-reference>
+         <document-id>
+            <country>DE</country>
+            <doc-number>10027360.2</doc-number>
+            <date>2000-06-02</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">Dreh-Energieumsetzer für ein Hybrid-Elektrofahrzeug</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>H02K0016000000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <parties>
+         <applicants>
+            <applicant sequence="1" app-type="applicant">
+               <addressbook>
+                  <text>DENSO CORPORATION, Kariya-city, Aichi-pref., JP</text>
+                  <name>DENSO CORPORATION, Kariya-city</name>
+                  <address>
+                     <address-1>Aichi-pref.</address-1>
+                     <country>JP</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants>
+         <inventors>
+            <inventor sequence="1">
+               <addressbook>
+                  <text>Seguchi, Masahiro, Kariya, Aichi, JP</text>
+                  <name>Seguchi, Masahiro, Kariya</name>
+                  <address>
+                     <address-1>Aichi</address-1>
+                     <country>JP</country>
+                  </address>
+               </addressbook>
+            </inventor>
+         </inventors>
+         <correspondence-address>
+            <addressbook>
+               <text>KUHNEN &amp; WACKER Patent- und Rechtsanwaltsbüro, 85319 Freising, DE</text>
+               <name>KUHNEN &amp; WACKER Patent- und Rechtsanwaltsbüro</name>
+               <address>
+                  <address-1>85319 Freising</address-1>
+                  <country>DE</country>
+               </address>
+            </addressbook>
+         </correspondence-address>
+         <agents>
+            <agent sequence="1">
+               <addressbook>
+                  <text>KUHNEN &amp; WACKER Patent- und Rechtsanwaltsbüro, 85354 Freising, DE</text>
+                  <name>KUHNEN &amp; WACKER Patent- und Rechtsanwaltsbüro</name>
+                  <address>
+                     <address-1>85354 Freising</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </agent>
+         </agents>
+      </parties>
+      <priority-claims>
+         <priority-claim sequence="1">
+            <country>JP</country>
+            <date>1999-06-04</date>
+            <doc-number>11158010</doc-number>
+         </priority-claim>
+      </priority-claims>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>nicht-anhaengig-erloschen</status>
+         <agent-type>vertreter</agent-type>
+         <national-filing-data>2000-06-02</national-filing-data>
+         <date-of-first-publication>2000-12-07</date-of-first-publication>
+         <abstract>Ein Dreh-Energieumsetzer ist zusammengesetzt aus einem Stator (1210), der an einem zylinderförmigen Gehäuse befestigt ist, und einem ersten Rotor (1350) und einem zweiten Rotor (1310), der drehbar in dem Gehäuse gehaltert ist. Der erste Rotor wird durch eine Brennkraftmaschine (100) angetrieben und es wird elektrische Energie dem Stator von einer Batterie (600) aus zugeführt, wobei ein sich drehendes Magnetfeld in dem Stator erzeugt wird. Es wird Drehenergie elektromagnetisch von dem ersten Rotor auf den zweiten Rotor übertragen, der mit den angetriebenen Rädern (700) eines Fahrzeugs verbunden ist. Die Größe der Drehenergie des zweiten Rotors wird dadurch eingestellt, indem der elektrische Strom gesteuert wird, der dem Stator zugeführt wird. Die Batterie führt entweder Energie zu oder empfängt Energie gemäß der Größe der Drehenergie des zweiten Rotors. Da der elektrische Strom lediglich dem Stator zugeführt wird, der starr in dem Gehäuse aufgenommen ist, ist keine elektrische Zuführeinrichtung mit Schleifringen und Bürsten erforderlich. Daher kann der Dreh-Energieumsetzer in der Größe klein ausgeführt werden und seine Zuverlässigkeit wird verbessert.</abstract>
+         <date-last-register-update>2017-06-21</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents/>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R000</procedural-status>
+         <date-of-procedural-status>2000-06-02</date-of-procedural-status>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R004</procedural-status>
+         <date-of-procedural-status>2000-07-20</date-of-procedural-status>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verwaltungsverfahren</type-of-procedure>
+         <procedural-status>R119</procedural-status>
+         <date-of-procedural-status>2007-01-03</date-of-procedural-status>
+         <publication-info>
+            <issue-number>16</issue-number>
+            <year>2007</year>
+            <publication-date>2007-04-19</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+      </event-data>
+      <event-data>
+         <type-of-procedure>klassifikationsaenderung</type-of-procedure>
+         <procedural-status>R079</procedural-status>
+         <date-of-procedural-status>2005-10-17</date-of-procedural-status>
+         <ipc-main-class>
+            <ipc-symbol>H02K0016000000</ipc-symbol>
+            <ipc-version>2006.01</ipc-version>
+         </ipc-main-class>
+         <previous-ipc-main-class>
+            <ipc-symbol>H02K0016000000</ipc-symbol>
+            <ipc-version>2000.01</ipc-version>
+         </previous-ipc-main-class>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R200</procedural-status>
+         <date-of-procedural-status>2000-12-07</date-of-procedural-status>
+         <publication-info>
+            <issue-number>49</issue-number>
+            <year>2000</year>
+            <publication-date>2000-12-07</publication-date>
+            <publication-type>grossteile-publikation</publication-type>
+            <part>teil-1</part>
+         </publication-info>
+         <published-documents>
+            <document>DE000010027360A1</document>
+         </published-documents>
+      </event-data>
+   </events>
+</dpma-patent-document>
