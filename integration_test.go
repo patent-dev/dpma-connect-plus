@@ -4,6 +4,7 @@ package dpmaconnect
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -430,6 +431,44 @@ func TestIntegration_GetTrademarkInfoParsed(t *testing.T) {
 	}
 
 	t.Logf("GetTrademarkInfoParsed: %s - %s (%s)", result.RegistrationNumber, result.MarkText, result.Status)
+}
+
+func TestIntegration_GetPatentInfoParsed_InvalidNumber(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	// DE102020001234 is not a valid registered number; the DPMA API returns
+	// an error XML response with an <Error> root element instead of <dpma-patent-document>.
+	// The client library must detect this and return a typed error, not XMLParseError.
+	_, err := client.GetPatentInfoParsed(ctx, "DE102020001234")
+	if err == nil {
+		t.Fatal("Expected error for invalid patent number")
+	}
+
+	// Should NOT be an XMLParseError (that means we failed to detect the error response)
+	var xmlErr *XMLParseError
+	if errors.As(err, &xmlErr) {
+		t.Errorf("Got XMLParseError (error response not detected): %v", err)
+	}
+
+	t.Logf("Correctly received error for invalid number: %T: %v", err, err)
+}
+
+func TestIntegration_GetPatentInfoParsed_PublicationNumber(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	// Look up by publication number - should resolve via search
+	result, err := client.GetPatentInfoByPublicationNumber(ctx, "DE102019200907A1")
+	if err != nil {
+		t.Fatalf("GetPatentInfoByPublicationNumber() error = %v", err)
+	}
+
+	if result.Title == "" {
+		t.Error("Title is empty")
+	}
+
+	t.Logf("GetPatentInfoByPublicationNumber: %s - %s", result.ApplicationRef.Number, result.Title)
 }
 
 func TestIntegration_DataNotAvailable(t *testing.T) {

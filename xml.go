@@ -19,25 +19,44 @@ func (e *XMLParseError) Unwrap() error {
 	return e.Err
 }
 
-// detectErrorXML checks if XML data contains a DPMA error response
-// (Transaction with TransactionErrorDetails) rather than expected data.
+// detectErrorXML checks if XML data contains a DPMA error response.
+// Handles two formats:
+//   - <Transaction> with TransactionErrorDetails (search/bulk endpoints)
+//   - <Error Message_DE="..." Message_EN="..."/> (patent info endpoint)
+//
 // Returns a typed error if error XML is detected, nil otherwise.
 func detectErrorXML(data []byte) error {
+	// Try <Transaction> error format
 	var errResp ErrorResponse
-	if err := xml.Unmarshal(data, &errResp); err != nil {
-		return nil
+	if err := xml.Unmarshal(data, &errResp); err == nil {
+		code, text := errResp.errorCodeAndText()
+		if code != "" || text != "" {
+			if (code == "E001" || code == "Error") && text == "Data not available" {
+				return &DataNotAvailableError{}
+			}
+			return &APIError{
+				Code:    code,
+				Message: text,
+			}
+		}
 	}
-	code, text := errResp.errorCodeAndText()
-	if code == "" && text == "" {
-		return nil
+
+	// Try <Error> element format
+	var simpleErr simpleErrorResponse
+	if err := xml.Unmarshal(data, &simpleErr); err == nil {
+		msg := simpleErr.MessageEN
+		if msg == "" {
+			msg = simpleErr.MessageDE
+		}
+		if msg != "" {
+			return &APIError{
+				Code:    "Error",
+				Message: msg,
+			}
+		}
 	}
-	if (code == "E001" || code == "Error") && text == "Data not available" {
-		return &DataNotAvailableError{}
-	}
-	return &APIError{
-		Code:    code,
-		Message: text,
-	}
+
+	return nil
 }
 
 // --- Public types ---

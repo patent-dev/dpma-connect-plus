@@ -41,6 +41,14 @@ func (r *ErrorResponse) errorCodeAndText() (code, text string) {
 	return "", ""
 }
 
+// simpleErrorResponse represents the <Error> root element returned by some DPMA endpoints.
+// Format: <Error Message_DE="..." Message_EN="..."/>
+type simpleErrorResponse struct {
+	XMLName   xml.Name `xml:"Error"`
+	MessageDE string   `xml:"Message_DE,attr"`
+	MessageEN string   `xml:"Message_EN,attr"`
+}
+
 // NotFoundError represents resource not found errors
 type NotFoundError struct {
 	Resource string
