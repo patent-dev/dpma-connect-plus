@@ -464,6 +464,249 @@ func TestParsePatentSearch_BOMPrefixed(t *testing.T) {
 	}
 }
 
+func TestDetectErrorXML(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    []byte
+		wantErr bool
+		errType string
+	}{
+		{
+			name:    "valid patent search XML",
+			data:    []byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`),
+			wantErr: false,
+		},
+		{
+			name:    "non-XML data",
+			data:    []byte("not xml at all"),
+			wantErr: false,
+		},
+		{
+			name: "patent error - data not available",
+			data: []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <PatentTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E001</TransactionErrorCode>
+        <TransactionErrorText>Data not available</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </PatentTransactionBody>
+</Transaction>`),
+			wantErr: true,
+			errType: "DataNotAvailableError",
+		},
+		{
+			name: "trademark error - permission denied",
+			data: []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <TradeMarkTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E002</TransactionErrorCode>
+        <TransactionErrorText>Permission denied</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </TradeMarkTransactionBody>
+</Transaction>`),
+			wantErr: true,
+			errType: "APIError",
+		},
+		{
+			name: "design error",
+			data: []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <DesignTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E003</TransactionErrorCode>
+        <TransactionErrorText>Resource not found</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </DesignTransactionBody>
+</Transaction>`),
+			wantErr: true,
+			errType: "APIError",
+		},
+		{
+			name: "transaction without error details",
+			data: []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <TradeMarkTransactionBody>
+  </TradeMarkTransactionBody>
+</Transaction>`),
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := detectErrorXML(tt.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("detectErrorXML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				return
+			}
+			switch tt.errType {
+			case "DataNotAvailableError":
+				var dna *DataNotAvailableError
+				if !errors.As(err, &dna) {
+					t.Errorf("expected *DataNotAvailableError, got %T: %v", err, err)
+				}
+			case "APIError":
+				var apiErr *APIError
+				if !errors.As(err, &apiErr) {
+					t.Errorf("expected *APIError, got %T: %v", err, err)
+				}
+			}
+		})
+	}
+}
+
+func TestParsePatentSearch_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <PatentTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E001</TransactionErrorCode>
+        <TransactionErrorText>Data not available</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </PatentTransactionBody>
+</Transaction>`)
+
+	_, err := ParsePatentSearch(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var dna *DataNotAvailableError
+	if !errors.As(err, &dna) {
+		t.Errorf("expected *DataNotAvailableError, got %T: %v", err, err)
+	}
+}
+
+func TestParsePatentInfo_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <PatentTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E002</TransactionErrorCode>
+        <TransactionErrorText>Permission denied</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </PatentTransactionBody>
+</Transaction>`)
+
+	_, err := ParsePatentInfo(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Errorf("expected *APIError, got %T: %v", err, err)
+	}
+	if apiErr.Code != "E002" {
+		t.Errorf("error code = %q, want %q", apiErr.Code, "E002")
+	}
+}
+
+func TestParseTrademarkInfo_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <TradeMarkTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E001</TransactionErrorCode>
+        <TransactionErrorText>Data not available</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </TradeMarkTransactionBody>
+</Transaction>`)
+
+	_, err := ParseTrademarkInfo(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var dna *DataNotAvailableError
+	if !errors.As(err, &dna) {
+		t.Errorf("expected *DataNotAvailableError, got %T: %v", err, err)
+	}
+}
+
+func TestParseTrademarkSearch_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <TradeMarkTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E001</TransactionErrorCode>
+        <TransactionErrorText>Data not available</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </TradeMarkTransactionBody>
+</Transaction>`)
+
+	_, err := ParseTrademarkSearch(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var dna *DataNotAvailableError
+	if !errors.As(err, &dna) {
+		t.Errorf("expected *DataNotAvailableError, got %T: %v", err, err)
+	}
+}
+
+func TestParseDesignSearch_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <DesignTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E003</TransactionErrorCode>
+        <TransactionErrorText>Resource not found</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </DesignTransactionBody>
+</Transaction>`)
+
+	_, err := ParseDesignSearch(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Errorf("expected *APIError, got %T: %v", err, err)
+	}
+}
+
+func TestParseDesignInfo_ErrorXML(t *testing.T) {
+	errorXML := []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<Transaction>
+  <DesignTransactionBody>
+    <TransactionErrorDetails>
+      <TransactionError>
+        <TransactionErrorCode>E003</TransactionErrorCode>
+        <TransactionErrorText>Resource not found</TransactionErrorText>
+      </TransactionError>
+    </TransactionErrorDetails>
+  </DesignTransactionBody>
+</Transaction>`)
+
+	_, err := ParseDesignInfo(errorXML)
+	if err == nil {
+		t.Fatal("expected error for error XML")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Errorf("expected *APIError, got %T: %v", err, err)
+	}
+}
+
 func TestXMLParseError_Unwrap(t *testing.T) {
 	inner := errors.New("underlying error")
 	xmlErr := &XMLParseError{Operation: "TestOp", Err: inner}

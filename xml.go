@@ -19,6 +19,27 @@ func (e *XMLParseError) Unwrap() error {
 	return e.Err
 }
 
+// detectErrorXML checks if XML data contains a DPMA error response
+// (Transaction with TransactionErrorDetails) rather than expected data.
+// Returns a typed error if error XML is detected, nil otherwise.
+func detectErrorXML(data []byte) error {
+	var errResp ErrorResponse
+	if err := xml.Unmarshal(data, &errResp); err != nil {
+		return nil
+	}
+	code, text := errResp.errorCodeAndText()
+	if code == "" && text == "" {
+		return nil
+	}
+	if (code == "E001" || code == "Error") && text == "Data not available" {
+		return &DataNotAvailableError{}
+	}
+	return &APIError{
+		Code:    code,
+		Message: text,
+	}
+}
+
 // --- Public types ---
 
 // Party represents a person or organization (applicant, inventor, etc.)
@@ -521,6 +542,9 @@ func extractDesignApplicants(raw []xmlDesignApplicant) []Party {
 
 // ParsePatentSearch parses a patent search XML response.
 func ParsePatentSearch(data []byte) (*PatentSearchResult, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlPatentHitList
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParsePatentSearch", Err: err}
@@ -563,6 +587,9 @@ func ParsePatentSearch(data []byte) (*PatentSearchResult, error) {
 
 // ParsePatentInfo parses a patent info XML response (ST36 format).
 func ParsePatentInfo(data []byte) (*PatentInfo, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlDPMAPatentDocument
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParsePatentInfo", Err: err}
@@ -625,6 +652,9 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 
 // ParseTrademarkSearch parses a trademark search XML response.
 func ParseTrademarkSearch(data []byte) (*TrademarkSearchResult, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlTrademarkHitList
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParseTrademarkSearch", Err: err}
@@ -655,6 +685,9 @@ func ParseTrademarkSearch(data []byte) (*TrademarkSearchResult, error) {
 
 // ParseTrademarkInfo parses a trademark info XML response (ST66 format).
 func ParseTrademarkInfo(data []byte) (*TrademarkInfo, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlTrademarkTransaction
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParseTrademarkInfo", Err: err}
@@ -700,6 +733,9 @@ func ParseTrademarkInfo(data []byte) (*TrademarkInfo, error) {
 
 // ParseDesignSearch parses a design search XML response.
 func ParseDesignSearch(data []byte) (*DesignSearchResult, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlDesignHitList
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParseDesignSearch", Err: err}
@@ -720,6 +756,9 @@ func ParseDesignSearch(data []byte) (*DesignSearchResult, error) {
 
 // ParseDesignInfo parses a design info XML response (ST86 format).
 func ParseDesignInfo(data []byte) (*DesignInfo, error) {
+	if err := detectErrorXML(data); err != nil {
+		return nil, err
+	}
 	var raw xmlDesignTransaction
 	if err := xml.Unmarshal(data, &raw); err != nil {
 		return nil, &XMLParseError{Operation: "ParseDesignInfo", Err: err}
