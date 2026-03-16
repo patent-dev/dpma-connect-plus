@@ -4,12 +4,29 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/patent-dev/dpma-connect-plus/generated"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// isRegisteredNumber returns true if the input looks like a bare DPMA registered number
+// (digits only, no DE prefix, no kind code). The DPMA getRegisterInfo API requires
+// the full registered number including check digit (e.g., "100273629").
+func isRegisteredNumber(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
 
 // SearchPatents executes a patent/utility model expert search query
 func (c *Client) SearchPatents(ctx context.Context, query string) ([]byte, error) {
@@ -29,7 +46,7 @@ func (c *Client) GetPatentPublicationPDF(ctx context.Context, documentID string)
 	return resourceResult(resp.Body, resp.StatusCode(), "patent publication", documentID, "failed to download PDF")
 }
 
-// GetPatentInfo retrieves patent information by registered number
+// GetPatentInfo retrieves patent information by registered number (digits only, including check digit).
 func (c *Client) GetPatentInfo(ctx context.Context, registeredNumber string) ([]byte, error) {
 	resp, err := c.generated.GetPatentInfoWithResponse(ctx, registeredNumber)
 	if err != nil {
@@ -300,12 +317,20 @@ func (c *Client) SearchPatentsParsed(ctx context.Context, query string) (*Patent
 }
 
 // GetPatentInfoParsed retrieves patent info and returns parsed bibliographic data.
-func (c *Client) GetPatentInfoParsed(ctx context.Context, registeredNumber string) (*PatentInfo, error) {
-	data, err := c.GetPatentInfo(ctx, registeredNumber)
-	if err != nil {
-		return nil, err
+// Accepts either a bare registered number (e.g., "100273629") or a DE patent number
+// with country prefix and/or kind code (e.g., "DE10027362C2", "DE102019200907A1").
+// For non-registered numbers, it resolves via publication number search automatically.
+func (c *Client) GetPatentInfoParsed(ctx context.Context, patentNumber string) (*PatentInfo, error) {
+	patentNumber = strings.TrimSpace(patentNumber)
+	if isRegisteredNumber(patentNumber) {
+		data, err := c.GetPatentInfo(ctx, patentNumber)
+		if err != nil {
+			return nil, err
+		}
+		return ParsePatentInfo(data)
 	}
-	return ParsePatentInfo(data)
+	// Not a bare registered number - resolve via publication number search
+	return c.GetPatentInfoByPublicationNumber(ctx, patentNumber)
 }
 
 // GetPatentInfoByPublicationNumber resolves a DE publication number (e.g. "DE102019200907A1")

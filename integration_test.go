@@ -490,3 +490,63 @@ func TestIntegration_DataNotAvailable(t *testing.T) {
 
 	t.Logf("Correctly received DataNotAvailableError for %d week %d", year, week)
 }
+
+func TestIntegration_GetPatentInfoParsed_NormalizeFormats(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	tests := []struct {
+		name  string
+		input string
+	}{
+		// 100273602 is DE10027362 - a known working patent
+		{"bare registered number", "100273602"},
+		{"with DE prefix (known patent)", "DE10027362"},
+		{"with DE prefix and kind code C2", "DE10027362C2"},
+		{"publication number A1", "DE102019200907A1"},
+		{"lowercase", "de10027362c2"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info, err := client.GetPatentInfoParsed(ctx, tt.input)
+			if err != nil {
+				t.Fatalf("GetPatentInfoParsed(%q) error = %v", tt.input, err)
+			}
+			if info.Title == "" {
+				t.Errorf("GetPatentInfoParsed(%q) returned empty title", tt.input)
+			}
+			t.Logf("GetPatentInfoParsed(%q) -> title=%q, type=%q", tt.input, info.Title, info.IPRightType)
+		})
+	}
+}
+
+func TestIntegration_GetPatentInfoByPublicationNumber_OldPatents(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{"DE123C (publication kind)", "DE123C"},
+		{"DE123A (application kind)", "DE123A"},
+		{"search PN=DE000000000123A", "DE000000000123A"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info, err := client.GetPatentInfoByPublicationNumber(ctx, tt.input)
+			if err != nil {
+				var notFound *NotFoundError
+				if errors.As(err, &notFound) {
+					t.Logf("%s not found via publication number search", tt.input)
+					return
+				}
+				t.Errorf("GetPatentInfoByPublicationNumber(%s) error = %v", tt.input, err)
+				return
+			}
+			t.Logf("GetPatentInfoByPublicationNumber(%s) -> title=%q", tt.input, info.Title)
+		})
+	}
+}

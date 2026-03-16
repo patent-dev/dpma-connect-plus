@@ -231,7 +231,84 @@ func TestGetPatentInfoParsed(t *testing.T) {
 	}
 }
 
-func TestGetPatentInfoParsed_NotFound(t *testing.T) {
+func TestIsRegisteredNumber(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"100273629", true},
+		{"123", true},
+		{"", false},
+		{"DE123C", false},
+		{"DE10027362", false},
+		{"de123c", false},
+		{"10027362B4", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := isRegisteredNumber(tt.input)
+			if got != tt.want {
+				t.Errorf("isRegisteredNumber(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetPatentInfoParsed_RegisteredNumber(t *testing.T) {
+	// Bare registered number should call getRegisterInfo directly
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/100273629")
+		w.WriteHeader(http.StatusOK)
+		w.Write(patentInfoXML)
+	}
+
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	result, err := client.GetPatentInfoParsed(context.Background(), "100273629")
+	if err != nil {
+		t.Fatalf("GetPatentInfoParsed error = %v", err)
+	}
+	if result.Title == "" {
+		t.Error("Title is empty")
+	}
+}
+
+func TestGetPatentInfoParsed_PublicationNumber(t *testing.T) {
+	// DE patent number with prefix should resolve via search
+	reqCount := 0
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		reqCount++
+		w.WriteHeader(http.StatusOK)
+		if reqCount == 1 {
+			// First request: search by PN=DE10027362C2
+			requirePath(t, r, "/DPMAregisterPatService/search/")
+			w.Write(patentSearchXML)
+		} else {
+			// Second request: get info by registered number from search result
+			requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/")
+			w.Write(patentInfoXML)
+		}
+	}
+
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	result, err := client.GetPatentInfoParsed(context.Background(), "DE10027362C2")
+	if err != nil {
+		t.Fatalf("GetPatentInfoParsed error = %v", err)
+	}
+	if result.Title == "" {
+		t.Error("Title is empty")
+	}
+	if reqCount != 2 {
+		t.Errorf("expected 2 requests (search + info), got %d", reqCount)
+	}
+}
+
+func TestGetPatentInfoParsed_NotFound_RegisteredNumber(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -239,12 +316,31 @@ func TestGetPatentInfoParsed_NotFound(t *testing.T) {
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
-	_, err := client.GetPatentInfoParsed(context.Background(), "INVALID")
+	_, err := client.GetPatentInfoParsed(context.Background(), "999999999")
 	if err == nil {
 		t.Fatal("expected error for 404")
 	}
 	if _, ok := err.(*NotFoundError); !ok {
 		t.Errorf("expected *NotFoundError, got %T", err)
+	}
+}
+
+func TestGetPatentInfoParsed_NotFound_PublicationNumber(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`))
+	}
+
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	_, err := client.GetPatentInfoParsed(context.Background(), "DE999999999X1")
+	if err == nil {
+		t.Fatal("expected error for no results")
+	}
+	var notFound *NotFoundError
+	if !errors.As(err, &notFound) {
+		t.Errorf("expected *NotFoundError, got %T: %v", err, err)
 	}
 }
 
