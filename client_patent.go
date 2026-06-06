@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -66,132 +67,102 @@ func (c *Client) GetSearchableFullText(ctx context.Context, documentID string) (
 
 // GetDisclosureDocumentsXML downloads disclosure documents (A) as XML for a publication week
 func (c *Client) GetDisclosureDocumentsXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetDisclosureDocumentsXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get disclosure documents: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download disclosure documents")
+	return fetchWeeklyBulk(year, week,
+		"failed to get disclosure documents", "failed to download disclosure documents",
+		func(pw string) (*generated.GetDisclosureDocumentsXMLResponse, error) {
+			return c.generated.GetDisclosureDocumentsXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetDisclosureDocumentsXMLResponse) []byte { return r.Body })
 }
 
 // GetPatentSpecificationsXML downloads patent specifications (B, C) as XML for a publication week
 func (c *Client) GetPatentSpecificationsXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetPatentSpecificationsXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get patent specifications: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download patent specifications")
+	return fetchWeeklyBulk(year, week,
+		"failed to get patent specifications", "failed to download patent specifications",
+		func(pw string) (*generated.GetPatentSpecificationsXMLResponse, error) {
+			return c.generated.GetPatentSpecificationsXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetPatentSpecificationsXMLResponse) []byte { return r.Body })
 }
 
 // GetUtilityModelsXML downloads utility models (U) as XML for a publication week
 func (c *Client) GetUtilityModelsXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetUtilityModelsXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get utility models: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download utility models")
+	return fetchWeeklyBulk(year, week,
+		"failed to get utility models", "failed to download utility models",
+		func(pw string) (*generated.GetUtilityModelsXMLResponse, error) {
+			return c.generated.GetUtilityModelsXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetUtilityModelsXMLResponse) []byte { return r.Body })
 }
 
 // GetPublicationDataXML downloads publication data as XML for a publication week
 func (c *Client) GetPublicationDataXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetPublicationDataXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get publication data: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download publication data")
+	return fetchWeeklyBulk(year, week,
+		"failed to get publication data", "failed to download publication data",
+		func(pw string) (*generated.GetPublicationDataXMLResponse, error) {
+			return c.generated.GetPublicationDataXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetPublicationDataXMLResponse) []byte { return r.Body })
 }
 
 // GetApplicantCitationsXML downloads applicant citations as XML for a publication week
 func (c *Client) GetApplicantCitationsXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetApplicantCitationsXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get applicant citations: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download applicant citations")
+	return fetchWeeklyBulk(year, week,
+		"failed to get applicant citations", "failed to download applicant citations",
+		func(pw string) (*generated.GetApplicantCitationsXMLResponse, error) {
+			return c.generated.GetApplicantCitationsXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetApplicantCitationsXMLResponse) []byte { return r.Body })
 }
 
 // GetEuropeanPatentSpecificationsXML downloads European patent specifications as XML for a publication week
 func (c *Client) GetEuropeanPatentSpecificationsXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetEuropeanPatentSpecificationsXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get European patent specifications: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download European patent specifications")
+	return fetchWeeklyBulk(year, week,
+		"failed to get European patent specifications", "failed to download European patent specifications",
+		func(pw string) (*generated.GetEuropeanPatentSpecificationsXMLResponse, error) {
+			return c.generated.GetEuropeanPatentSpecificationsXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetEuropeanPatentSpecificationsXMLResponse) []byte { return r.Body })
 }
 
 // GetDisclosureDocumentsPDF downloads disclosure documents as PDF for a publication week
 func (c *Client) GetDisclosureDocumentsPDF(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetDisclosureDocumentsPDFWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get disclosure documents PDF: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download disclosure documents PDF")
+	return fetchWeeklyBulk(year, week,
+		"failed to get disclosure documents PDF", "failed to download disclosure documents PDF",
+		func(pw string) (*generated.GetDisclosureDocumentsPDFResponse, error) {
+			return c.generated.GetDisclosureDocumentsPDFWithResponse(ctx, pw)
+		},
+		func(r *generated.GetDisclosureDocumentsPDFResponse) []byte { return r.Body })
 }
 
 // GetPatentSpecificationsPDF downloads patent specifications as PDF for a publication week
 func (c *Client) GetPatentSpecificationsPDF(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetPatentSpecificationsPDFWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get patent specifications PDF: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download patent specifications PDF")
+	return fetchWeeklyBulk(year, week,
+		"failed to get patent specifications PDF", "failed to download patent specifications PDF",
+		func(pw string) (*generated.GetPatentSpecificationsPDFResponse, error) {
+			return c.generated.GetPatentSpecificationsPDFWithResponse(ctx, pw)
+		},
+		func(r *generated.GetPatentSpecificationsPDFResponse) []byte { return r.Body })
 }
 
 // GetEuropeanPatentSpecificationsPDF downloads European patent specifications as PDF for a publication week
 func (c *Client) GetEuropeanPatentSpecificationsPDF(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetEuropeanPatentSpecificationsPDFWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get European patent specifications PDF: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download European patent specifications PDF")
+	return fetchWeeklyBulk(year, week,
+		"failed to get European patent specifications PDF", "failed to download European patent specifications PDF",
+		func(pw string) (*generated.GetEuropeanPatentSpecificationsPDFResponse, error) {
+			return c.generated.GetEuropeanPatentSpecificationsPDFWithResponse(ctx, pw)
+		},
+		func(r *generated.GetEuropeanPatentSpecificationsPDFResponse) []byte { return r.Body })
 }
 
 // GetUtilityModelsPDF downloads utility models as PDF for a publication week
 func (c *Client) GetUtilityModelsPDF(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetUtilityModelsPDFWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get utility models PDF: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download utility models PDF")
+	return fetchWeeklyBulk(year, week,
+		"failed to get utility models PDF", "failed to download utility models PDF",
+		func(pw string) (*generated.GetUtilityModelsPDFResponse, error) {
+			return c.generated.GetUtilityModelsPDFWithResponse(ctx, pw)
+		},
+		func(r *generated.GetUtilityModelsPDFResponse) []byte { return r.Body })
 }
 
 // GetPatentRegisterExtract downloads patent register extract data for a date and period
@@ -209,102 +180,66 @@ func (c *Client) GetPatentRegisterExtract(ctx context.Context, date time.Time, p
 
 // GetDisclosureDocumentsXMLStream downloads disclosure documents as XML and writes to dst
 func (c *Client) GetDisclosureDocumentsXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetDisclosureDocumentsXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get disclosure documents", dst)
+	return streamWeekly(year, week, "failed to get disclosure documents", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetDisclosureDocumentsXML(ctx, pw) })
 }
 
 // GetPatentSpecificationsXMLStream downloads patent specifications as XML and writes to dst
 func (c *Client) GetPatentSpecificationsXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetPatentSpecificationsXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get patent specifications", dst)
+	return streamWeekly(year, week, "failed to get patent specifications", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetPatentSpecificationsXML(ctx, pw) })
 }
 
 // GetUtilityModelsXMLStream downloads utility models as XML and writes to dst
 func (c *Client) GetUtilityModelsXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetUtilityModelsXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get utility models", dst)
+	return streamWeekly(year, week, "failed to get utility models", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetUtilityModelsXML(ctx, pw) })
 }
 
 // GetPublicationDataXMLStream downloads publication data as XML and writes to dst
 func (c *Client) GetPublicationDataXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetPublicationDataXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get publication data", dst)
+	return streamWeekly(year, week, "failed to get publication data", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetPublicationDataXML(ctx, pw) })
 }
 
 // GetApplicantCitationsXMLStream downloads applicant citations as XML and writes to dst
 func (c *Client) GetApplicantCitationsXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetApplicantCitationsXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get applicant citations", dst)
+	return streamWeekly(year, week, "failed to get applicant citations", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetApplicantCitationsXML(ctx, pw) })
 }
 
 // GetEuropeanPatentSpecificationsXMLStream downloads European patent specifications as XML and writes to dst
 func (c *Client) GetEuropeanPatentSpecificationsXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetEuropeanPatentSpecificationsXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get European patent specifications", dst)
+	return streamWeekly(year, week, "failed to get European patent specifications", dst,
+		func(pw string) (*http.Response, error) {
+			return c.generated.GetEuropeanPatentSpecificationsXML(ctx, pw)
+		})
 }
 
 // GetDisclosureDocumentsPDFStream downloads disclosure documents as PDF and writes to dst
 func (c *Client) GetDisclosureDocumentsPDFStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetDisclosureDocumentsPDF(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get disclosure documents PDF", dst)
+	return streamWeekly(year, week, "failed to get disclosure documents PDF", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetDisclosureDocumentsPDF(ctx, pw) })
 }
 
 // GetPatentSpecificationsPDFStream downloads patent specifications as PDF and writes to dst
 func (c *Client) GetPatentSpecificationsPDFStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetPatentSpecificationsPDF(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get patent specifications PDF", dst)
+	return streamWeekly(year, week, "failed to get patent specifications PDF", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetPatentSpecificationsPDF(ctx, pw) })
 }
 
 // GetEuropeanPatentSpecificationsPDFStream downloads European patent specifications as PDF and writes to dst
 func (c *Client) GetEuropeanPatentSpecificationsPDFStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetEuropeanPatentSpecificationsPDF(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get European patent specifications PDF", dst)
+	return streamWeekly(year, week, "failed to get European patent specifications PDF", dst,
+		func(pw string) (*http.Response, error) {
+			return c.generated.GetEuropeanPatentSpecificationsPDF(ctx, pw)
+		})
 }
 
 // GetUtilityModelsPDFStream downloads utility models as PDF and writes to dst
 func (c *Client) GetUtilityModelsPDFStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetUtilityModelsPDF(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get utility models PDF", dst)
+	return streamWeekly(year, week, "failed to get utility models PDF", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetUtilityModelsPDF(ctx, pw) })
 }
 
 // SearchPatentsParsed executes a patent search and returns parsed results.

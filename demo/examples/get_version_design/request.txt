@@ -1,0 +1,4 @@
+Method: get_version_design
+
+Parameters:
+  service: DPMAregisterGsmService

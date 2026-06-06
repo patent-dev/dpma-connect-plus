@@ -1,0 +1,4 @@
+Method: get_version_trademark
+
+Parameters:
+  service: DPMAregisterMarkeService

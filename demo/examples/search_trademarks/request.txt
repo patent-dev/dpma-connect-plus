@@ -1,0 +1,4 @@
+Method: search_trademarks
+
+Parameters:
+  query: md=Apple

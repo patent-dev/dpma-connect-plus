@@ -11,7 +11,7 @@ func TestSearchTrademarks(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(trademarkSearchXML)
+		_, _ = w.Write(trademarkSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -27,7 +27,7 @@ func TestSearchTrademarks(t *testing.T) {
 }
 
 func TestSearchTrademarks_Unauthorized(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 
@@ -45,7 +45,7 @@ func TestGetTrademarkInfo(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/getRegisterInfo/919224")
 		w.WriteHeader(http.StatusOK)
-		w.Write(trademarkInfoXML)
+		_, _ = w.Write(trademarkInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -61,7 +61,7 @@ func TestGetTrademarkInfo(t *testing.T) {
 }
 
 func TestGetTrademarkInfo_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -82,7 +82,7 @@ func TestGetTrademarkImage(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/getRegisterFullImage/919224")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("\x89PNG image data"))
+		_, _ = w.Write([]byte("\x89PNG image data"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -98,7 +98,7 @@ func TestGetTrademarkImage(t *testing.T) {
 }
 
 func TestGetTrademarkImage_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -119,7 +119,7 @@ func TestGetTrademarkThumbnail(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/getRegisterThumbnailImage/919224")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("thumbnail data"))
+		_, _ = w.Write([]byte("thumbnail data"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -139,7 +139,7 @@ func TestSearchTrademarksParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(trademarkSearchXML)
+		_, _ = w.Write(trademarkSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -159,7 +159,7 @@ func TestGetTrademarkInfoParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterMarkeService/getRegisterInfo/919224")
 		w.WriteHeader(http.StatusOK)
-		w.Write(trademarkInfoXML)
+		_, _ = w.Write(trademarkInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -178,7 +178,7 @@ func TestGetTrademarkInfoParsed(t *testing.T) {
 }
 
 func TestGetTrademarkInfoParsed_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 

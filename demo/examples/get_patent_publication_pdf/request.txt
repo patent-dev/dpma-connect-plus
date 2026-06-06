@@ -1,0 +1,4 @@
+Method: get_patent_publication_pdf
+
+Parameters:
+  documentID: DE102019200907A1

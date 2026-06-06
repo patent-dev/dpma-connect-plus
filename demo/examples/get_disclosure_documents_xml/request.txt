@@ -1,0 +1,5 @@
+Method: get_disclosure_documents_xml
+
+Parameters:
+  year: 2026
+  week: 9

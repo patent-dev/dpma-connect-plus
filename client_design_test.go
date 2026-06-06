@@ -11,7 +11,7 @@ func TestSearchDesigns(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(designSearchXML)
+		_, _ = w.Write(designSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -27,7 +27,7 @@ func TestSearchDesigns(t *testing.T) {
 }
 
 func TestSearchDesigns_Unauthorized(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 
@@ -45,7 +45,7 @@ func TestGetDesignInfo(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/getRegisterInfo/M8800174-0001")
 		w.WriteHeader(http.StatusOK)
-		w.Write(designInfoXML)
+		_, _ = w.Write(designInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -61,7 +61,7 @@ func TestGetDesignInfo(t *testing.T) {
 }
 
 func TestGetDesignInfo_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -82,7 +82,7 @@ func TestGetDesignImage(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/getRegisterFullImage/M8800174-0001/1")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("\xff\xd8\xff\xe0 JPEG data"))
+		_, _ = w.Write([]byte("\xff\xd8\xff\xe0 JPEG data"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -98,7 +98,7 @@ func TestGetDesignImage(t *testing.T) {
 }
 
 func TestGetDesignImage_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -119,7 +119,7 @@ func TestGetDesignThumbnail(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/getRegisterThumbnailImage/M8800174-0001/1")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("thumbnail data"))
+		_, _ = w.Write([]byte("thumbnail data"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -139,7 +139,7 @@ func TestSearchDesignsParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(designSearchXML)
+		_, _ = w.Write(designSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -162,7 +162,7 @@ func TestGetDesignInfoParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterGsmService/getRegisterInfo/M8800174-0001")
 		w.WriteHeader(http.StatusOK)
-		w.Write(designInfoXML)
+		_, _ = w.Write(designInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -181,7 +181,7 @@ func TestGetDesignInfoParsed(t *testing.T) {
 }
 
 func TestGetDesignInfoParsed_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 

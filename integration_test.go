@@ -437,10 +437,11 @@ func TestIntegration_GetPatentInfoParsed_InvalidNumber(t *testing.T) {
 	client := getTestClient(t)
 	ctx := context.Background()
 
-	// DE102020001234 is not a valid registered number; the DPMA API returns
-	// an error XML response with an <Error> root element instead of <dpma-patent-document>.
-	// The client library must detect this and return a typed error, not XMLParseError.
-	_, err := client.GetPatentInfoParsed(ctx, "DE102020001234")
+	// 999999999 is a bare (digits-only) registered number that does not exist;
+	// the DPMA API returns an error XML response with an <Error> root element
+	// instead of <dpma-patent-document>. The client must detect this and return
+	// a typed error, not an XMLParseError.
+	_, err := client.GetPatentInfoParsed(ctx, "999999999")
 	if err == nil {
 		t.Fatal("Expected error for invalid patent number")
 	}

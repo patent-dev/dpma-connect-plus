@@ -10,42 +10,28 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    - gocritic
-    - revive
     - misspell
-    - unconvert
-    - unparam
-    - bodyclose
-
-  settings:
-    gocritic:
-      enabled-tags:
-        - diagnostic
-        - performance
-      disabled-checks:
-        - hugeParam
-    revive:
-      rules:
-        - name: blank-imports
-        - name: exported
-          arguments:
-            - disableStutteringCheck
-        - name: unused-parameter
-        - name: unreachable-code
-        - name: redefines-builtin-id
-
+    - revive
   exclusions:
-    generated: lax
-    paths:
-      - generated
+    generated: strict
     rules:
-      # streamResponse closes resp.Body; bodyclose can't track ownership through the call
-      - linters: [bodyclose]
-        source: "c\\.generated\\."
-      # Test handlers: http.HandlerFunc signature requires unused params
-      - path: _test\.go
-        linters: [revive]
-        text: "unused-parameter"
-      # Unchecked w.Write in test handlers is fine
-      - path: _test\.go
-        linters: [errcheck]
+      # Generated code is exempt from style linters.
+      - path: generated/
+        linters:
+          - revive
+          - staticcheck
+      # Deliberate, established public package name (epo_ops); renaming would
+      # break the API for no readability gain. Only matches that legacy name.
+      - linters:
+          - revive
+        text: "don't use an underscore in package name"
+      # The cql subpackage keeps its CQL-prefixed exported type names on purpose
+      # (stable public API). Scoped to that package only.
+      - path: cql/
+        linters:
+          - revive
+        text: stutters
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

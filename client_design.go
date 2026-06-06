@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/patent-dev/dpma-connect-plus/generated"
@@ -49,28 +50,22 @@ func (c *Client) GetDesignThumbnail(ctx context.Context, designNumber, thumbnail
 
 // GetDesignBibliographicDataXML downloads design bibliographic data as XML for a publication week
 func (c *Client) GetDesignBibliographicDataXML(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetDesignBibliographicDataXMLWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get design bibliographic data: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download design bibliographic data")
+	return fetchWeeklyBulk(year, week,
+		"failed to get design bibliographic data", "failed to download design bibliographic data",
+		func(pw string) (*generated.GetDesignBibliographicDataXMLResponse, error) {
+			return c.generated.GetDesignBibliographicDataXMLWithResponse(ctx, pw)
+		},
+		func(r *generated.GetDesignBibliographicDataXMLResponse) []byte { return r.Body })
 }
 
 // GetDesignImages downloads design images for a publication week
 func (c *Client) GetDesignImages(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetDesignImagesWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get design images: %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download design images")
+	return fetchWeeklyBulk(year, week,
+		"failed to get design images", "failed to download design images",
+		func(pw string) (*generated.GetDesignImagesResponse, error) {
+			return c.generated.GetDesignImagesWithResponse(ctx, pw)
+		},
+		func(r *generated.GetDesignImagesResponse) []byte { return r.Body })
 }
 
 // GetDesignRegisterExtract downloads design register extract data for a date and period
@@ -106,22 +101,14 @@ func (c *Client) GetDesignInfoParsed(ctx context.Context, designNumber string) (
 
 // GetDesignBibliographicDataXMLStream downloads design bibliographic data as XML and writes to dst
 func (c *Client) GetDesignBibliographicDataXMLStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetDesignBibliographicDataXML(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get design bibliographic data", dst)
+	return streamWeekly(year, week, "failed to get design bibliographic data", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetDesignBibliographicDataXML(ctx, pw) })
 }
 
 // GetDesignImagesStream downloads design images and writes to dst
 func (c *Client) GetDesignImagesStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetDesignImages(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get design images", dst)
+	return streamWeekly(year, week, "failed to get design images", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetDesignImages(ctx, pw) })
 }
 
 // GetDesignRegisterExtractStream downloads design register extract data and writes to dst

@@ -1,0 +1,4 @@
+Method: get_design_info
+
+Parameters:
+  designNumber: M8800174-0001

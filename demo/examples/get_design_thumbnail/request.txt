@@ -1,0 +1,5 @@
+Method: get_design_thumbnail
+
+Parameters:
+  designNumber: M8800174-0001
+  thumbnailNumber: 1

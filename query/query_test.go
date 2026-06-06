@@ -183,24 +183,6 @@ func TestParseQuery_HasField(t *testing.T) {
 	}
 }
 
-func TestParseQuery_URLEncode(t *testing.T) {
-	tests := []struct {
-		query string
-		want  string
-	}{
-		{"TI=test", "TI%3Dtest"},
-		{"TI=test AND INH=foo", "TI%3Dtest+AND+INH%3Dfoo"},
-	}
-
-	for _, tt := range tests {
-		q, _ := ParseQuery(tt.query, ServiceAny)
-		got := q.URLEncode()
-		if got != tt.want {
-			t.Errorf("URLEncode(%q) = %q, want %q", tt.query, got, tt.want)
-		}
-	}
-}
-
 func TestParseQuery_String(t *testing.T) {
 	raw := "TI=Elektrofahrzeug AND INH=Siemens"
 	q, _ := ParseQuery(raw, ServicePatent)
@@ -421,6 +403,98 @@ func TestParseQuery_ComplexQueries(t *testing.T) {
 			}
 			if !q.Valid {
 				t.Errorf("Valid = false, errors: %v", q.Errors)
+			}
+		})
+	}
+}
+
+// TestParseQuery_SpacedEquals verifies that whitespace around the comparison
+// operator does not break field/equals association (defect: "TI = x" was
+// mis-tokenized as a value before '=' was seen).
+func TestParseQuery_SpacedEquals(t *testing.T) {
+	tests := []struct {
+		name    string
+		query   string
+		service Service
+	}{
+		{"spaced equals", "TI = Elektrofahrzeug", ServicePatent},
+		{"unspaced equals", "TI=Elektrofahrzeug", ServicePatent},
+		{"spaced before only", "TI =Elektrofahrzeug", ServicePatent},
+		{"spaced after only", "TI= Elektrofahrzeug", ServicePatent},
+		{"spaced with boolean", "TI = Motor AND INH = Siemens", ServicePatent},
+		{"spaced comparison", "AT >= 01.01.2024", ServicePatent},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			q, err := ParseQuery(tt.query, tt.service)
+			if err != nil {
+				t.Fatalf("ParseQuery(%q) error = %v", tt.query, err)
+			}
+			if !q.Valid {
+				t.Errorf("ParseQuery(%q) Valid = false, errors: %v", tt.query, q.Errors)
+			}
+			if !q.HasField("TI") && !q.HasField("AT") {
+				t.Errorf("ParseQuery(%q) did not register the leading field, fields: %v", tt.query, q.GetFields())
+			}
+		})
+	}
+}
+
+// TestParseQuery_UnknownFieldWithSpaces verifies that unknown-field validation
+// is still applied when whitespace surrounds the comparison operator.
+func TestParseQuery_UnknownFieldWithSpaces(t *testing.T) {
+	q, err := ParseQuery("MARKE = test", ServicePatent)
+	if err != nil {
+		t.Fatalf("ParseQuery error = %v", err)
+	}
+	if q.Valid {
+		t.Fatalf("expected invalid query for unknown field with spaces, errors: %v", q.Errors)
+	}
+	found := false
+	for _, e := range q.Errors {
+		if contains(e, "unknown field") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected 'unknown field' error, got %v", q.Errors)
+	}
+}
+
+// TestParseQuery_DanglingOperators verifies rejection of leading/trailing/adjacent
+// Boolean operators and comparison operators with an empty right-hand side.
+func TestParseQuery_DanglingOperators(t *testing.T) {
+	tests := []struct {
+		name    string
+		query   string
+		wantErr string
+	}{
+		{"trailing AND", "TI=a AND", "cannot end with operator"},
+		{"leading AND", "AND TI=a", "cannot start with operator"},
+		{"trailing German UND", "TI=a UND", "cannot end with operator"},
+		{"adjacent operators", "TI=a AND OR INH=b", "adjacent operators"},
+		{"empty value", "TI=", "missing value"},
+		{"empty value mid-query", "TI= AND INH=b", "missing value"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			q, err := ParseQuery(tt.query, ServicePatent)
+			if err != nil {
+				t.Fatalf("ParseQuery(%q) error = %v", tt.query, err)
+			}
+			if q.Valid {
+				t.Fatalf("ParseQuery(%q) Valid = true, expected false", tt.query)
+			}
+			found := false
+			for _, e := range q.Errors {
+				if contains(e, tt.wantErr) {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("ParseQuery(%q) errors = %v, want error containing %q", tt.query, q.Errors, tt.wantErr)
 			}
 		})
 	}

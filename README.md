@@ -1,19 +1,29 @@
 # DPMA Connect Plus Go Client
 
+[![CI](https://github.com/patent-dev/dpma-connect-plus/actions/workflows/ci.yml/badge.svg)](https://github.com/patent-dev/dpma-connect-plus/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/patent-dev/dpma-connect-plus.svg)](https://pkg.go.dev/github.com/patent-dev/dpma-connect-plus)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Report Card](https://goreportcard.com/badge/github.com/patent-dev/dpma-connect-plus)](https://goreportcard.com/report/github.com/patent-dev/dpma-connect-plus)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Go client library for the German Patent and Trademark Office (DPMA) Connect Plus REST API.
+A Go client for the German Patent and Trade Mark Office (DPMA) Connect Plus REST
+API (DPMAregister web services), covering German patent, design, and trademark
+data over HTTP Basic authentication.
 
-## Getting Started
+## Overview
 
-### Authentication
-
-DPMA Connect Plus is a paid service requiring authentication:
-
-- **Service Details**: https://www.dpma.de/recherche/datenabgabe/dpmaconnect/index.html
-- **Access**: Contact DPMA to obtain credentials
-- **Authentication Method**: HTTP Basic Authentication
+- **Three services** - patents and utility models, designs, and trademarks,
+  selected with the `dpma.ServicePatent`, `dpma.ServiceDesign`, and
+  `dpma.ServiceTrademark` constants.
+- **Expert search** - `SearchPatents`, `SearchDesigns`, `SearchTrademarks` using
+  DPMAregister expert search syntax, with optional client-side query validation.
+- **Register data** - register info by number, register extracts, and searchable
+  full text.
+- **Bulk and single downloads** - weekly XML/PDF bulk archives, single
+  publication PDFs, and design/trademark images.
+- **Streaming variants** - every bulk and register-extract method has a `*Stream`
+  variant that writes to an `io.Writer` without buffering the whole response.
+- **Typed errors** - `NotFoundError`, `DataNotAvailableError`, `APIError`, and
+  `XMLParseError` for `errors.As` handling.
 
 ## Installation
 
@@ -21,7 +31,32 @@ DPMA Connect Plus is a paid service requiring authentication:
 go get github.com/patent-dev/dpma-connect-plus
 ```
 
-## Quick Start
+## Getting access
+
+DPMAconnectPlus is a contractual data-supply service. The DPMA issues an HTTP
+Basic **username** and **password** after a signed standard agreement is in place;
+there is no self-service web portal. A one-time connection fee applies (200 EUR at
+time of writing); data retrieval itself is free.
+
+1. Review the service and terms on the
+   [DPMAconnectPlus page](https://www.dpma.de/english/search/data_supply_services/dpmaconnect/index.html).
+
+2. Complete the standard agreement (Standardvertrag DPMAconnectPlus) including the
+   purpose-of-use paragraph, and send two signed originals to
+   *Deutsches Patent- und Markenamt, Referat 2.1.2 - Kundenservice Datenabgabe,
+   80297 München, Germany*.
+
+3. The DPMA creates an account with a username and a password of your choice.
+
+4. Export the credentials for the client and demo:
+
+   ```bash
+   export DPMA_CONNECT_PLUS_USERNAME=your-username
+   export DPMA_CONNECT_PLUS_PASSWORD=your-password
+   ```
+
+
+## Quick start
 
 ```go
 package main
@@ -66,20 +101,38 @@ func main() {
 }
 ```
 
-## API Methods
+## Usage
 
 All methods accept `context.Context` for timeout and cancellation support.
 
-### Common Operations
+### Configuration
+
+```go
+config := &dpma.Config{
+    Username: "your-username",                                    // Required
+    Password: "your-password",                                    // Required
+    BaseURL:  "https://dpmaconnect.dpma.de/dpmaws/rest-services", // Default
+    Timeout:  20 * time.Minute,                                   // Default: 20 minutes
+    HTTPClient: myCustomHTTPClient,                               // Optional: your own *http.Client
+}
+
+client, err := dpma.NewClient(config)
+```
+
+If `HTTPClient` is set, `Timeout` is ignored and the custom client's timeout
+applies instead.
+
+### Common operations
 
 ```go
 // Get service version
 GetVersion(ctx, service string) (string, error)
 ```
 
-Use the service constants: `dpma.ServicePatent`, `dpma.ServiceDesign`, `dpma.ServiceTrademark`.
+Use the service constants: `dpma.ServicePatent`, `dpma.ServiceDesign`,
+`dpma.ServiceTrademark`.
 
-### Query Validation
+### Query validation
 
 ```go
 // Validate a query against service-specific field codes (returns nil or error)
@@ -88,9 +141,40 @@ ValidateDesignQuery(query string) error
 ValidateTrademarkQuery(query string) error
 ```
 
-For advanced usage (tokenization, field inspection), use the `query` sub-package directly.
+For advanced usage (tokenization, field inspection), use the `query` sub-package
+directly:
 
-### Patent Service
+```go
+import "github.com/patent-dev/dpma-connect-plus/query"
+
+// Parse and validate a patent query
+q, err := query.ParseQuery("TI=Elektrofahrzeug AND INH=Siemens", query.ServicePatent)
+if err != nil {
+    log.Fatal(err)
+}
+if err := q.Validate(); err != nil {
+    log.Fatal(err) // e.g. unknown field, unmatched parentheses
+}
+
+// Inspect the query
+fmt.Println(q.GetFields())    // ["TI", "INH"]
+fmt.Println(q.HasField("TI")) // true
+
+// Look up field definitions
+f, ok := query.GetField("TI", query.ServicePatent)
+fmt.Println(f.Description) // "title / designation"
+
+// List all valid fields for a service
+fields := query.GetValidFields(query.ServiceDesign)
+```
+
+The parser supports quoted values, comparison operators (`=`, `>=`, `<=`, `>`,
+`<`), parentheses and curly braces (procedure data), bracket/brace matching, and
+both English (`AND`, `OR`, `NOT`) and German (`UND`, `ODER`, `NICHT`) Boolean
+operators. Field validation is per service, based on the official DPMAregister
+field codes.
+
+### Patent service
 
 ```go
 // Search patents and utility models
@@ -123,7 +207,7 @@ GetUtilityModelsPDF(ctx, year, week int) ([]byte, error)
 GetPatentRegisterExtract(ctx, date time.Time, period string) ([]byte, error)
 ```
 
-### Design Service
+### Design service
 
 ```go
 // Search designs
@@ -144,7 +228,7 @@ GetDesignImages(ctx, year, week int) ([]byte, error)
 GetDesignRegisterExtract(ctx, date time.Time, period string) ([]byte, error)
 ```
 
-### Trademark Service
+### Trademark service
 
 ```go
 // Search trademarks
@@ -166,92 +250,12 @@ GetTrademarkBibDataRejected(ctx, year, week int) ([]byte, error)
 GetTrademarkRegisterExtract(ctx, date time.Time, period string) ([]byte, error)
 ```
 
-### Streaming Downloads (Memory-Efficient)
+### Streaming downloads (memory-efficient)
 
-Every bulk download and register extract method has a `*Stream` variant that writes to an `io.Writer`:
-
-```go
-// Patent streams
-GetDisclosureDocumentsXMLStream(ctx, year, week int, dst io.Writer) error
-GetPatentSpecificationsXMLStream(ctx, year, week int, dst io.Writer) error
-GetUtilityModelsXMLStream(ctx, year, week int, dst io.Writer) error
-GetPublicationDataXMLStream(ctx, year, week int, dst io.Writer) error
-GetApplicantCitationsXMLStream(ctx, year, week int, dst io.Writer) error
-GetEuropeanPatentSpecificationsXMLStream(ctx, year, week int, dst io.Writer) error
-GetDisclosureDocumentsPDFStream(ctx, year, week int, dst io.Writer) error
-GetPatentSpecificationsPDFStream(ctx, year, week int, dst io.Writer) error
-GetEuropeanPatentSpecificationsPDFStream(ctx, year, week int, dst io.Writer) error
-GetUtilityModelsPDFStream(ctx, year, week int, dst io.Writer) error
-GetPatentRegisterExtractStream(ctx, date time.Time, period string, dst io.Writer) error
-
-// Design streams
-GetDesignBibliographicDataXMLStream(ctx, year, week int, dst io.Writer) error
-GetDesignImagesStream(ctx, year, week int, dst io.Writer) error
-GetDesignRegisterExtractStream(ctx, date time.Time, period string, dst io.Writer) error
-
-// Trademark streams
-GetTrademarkBibDataAppliedStream(ctx, year, week int, dst io.Writer) error
-GetTrademarkBibDataRegisteredStream(ctx, year, week int, dst io.Writer) error
-GetTrademarkBibDataRejectedStream(ctx, year, week int, dst io.Writer) error
-GetTrademarkRegisterExtractStream(ctx, date time.Time, period string, dst io.Writer) error
-```
-
-## Configuration
+Every bulk download and register extract method has a `*Stream` variant that
+writes to an `io.Writer`:
 
 ```go
-config := &dpma.Config{
-    Username: "your-username",           // Required
-    Password: "your-password",           // Required
-    BaseURL:  "https://dpmaconnect.dpma.de/dpmaws/rest-services", // Default
-    Timeout:  20 * time.Minute,           // Request timeout (default: 20 minutes)
-    HTTPClient: myCustomHTTPClient,      // Optional: provide your own *http.Client
-}
-
-client, err := dpma.NewClient(config)
-```
-
-## Usage Examples
-
-### Download Patent PDF
-
-```go
-ctx := context.Background()
-pdf, err := client.GetPatentPublicationPDF(ctx, "DE102023000001A1")
-if err != nil {
-    log.Fatal(err)
-}
-
-err = os.WriteFile("patent.pdf", pdf, 0644)
-if err != nil {
-    log.Fatal(err)
-}
-```
-
-### Download Publication Week Data
-
-```go
-ctx := context.Background()
-
-zipData, err := client.GetDisclosureDocumentsXML(ctx, 2024, 45)
-if err != nil {
-    if _, ok := err.(*dpma.DataNotAvailableError); ok {
-        fmt.Println("Data not available for this week")
-        return
-    }
-    log.Fatal(err)
-}
-
-err = os.WriteFile("disclosure_202445.zip", zipData, 0644)
-if err != nil {
-    log.Fatal(err)
-}
-```
-
-### Stream Large Files
-
-```go
-ctx := context.Background()
-
 file, err := os.Create("patents_202445.zip")
 if err != nil {
     log.Fatal(err)
@@ -264,337 +268,192 @@ if err != nil {
 }
 ```
 
-### Search Designs
+The full set of `*Stream` methods mirrors the buffered bulk and register-extract
+methods above (`GetDisclosureDocumentsXMLStream`, `GetDesignImagesStream`,
+`GetTrademarkRegisterExtractStream`, and so on).
 
-```go
-ctx := context.Background()
+### Search query syntax
 
-// Validate query against design field codes
-if err := dpma.ValidateDesignQuery("INH=Samsung"); err != nil {
-    log.Fatal(err)
-}
+All search methods use
+[DPMAregister expert search syntax](https://register.dpma.de/DPMAregister/pat/experte).
+The format is `FIELD=value` with Boolean operators `AND`/`UND`, `OR`/`ODER`,
+`NOT`/`NICHT` (English and German are both accepted), comparison operators
+(`=`, `>=`, `<=`, `>`, `<`), wildcards (`?` any chars, `!` one char, `#` one or
+no char), quoted values, and parentheses. Procedure-data fields are written
+inside curly braces, for example `{VST=pub-offenlegungsschrift UND VSTT=05.01.2011}`.
 
-results, err := client.SearchDesigns(ctx, "INH=Samsung")
-if err != nil {
-    log.Fatal(err)
-}
+The `query` subpackage parses and validates queries against per-service field
+definitions (see [Query validation](#query-validation)). Each service supports a
+different set of field codes; the most common are listed below.
 
-fmt.Printf("Received %d bytes of XML results\n", len(results))
-```
-
-### Register Extract
-
-```go
-ctx := context.Background()
-
-date := time.Date(2024, 10, 23, 0, 0, 0, 0, time.UTC)
-data, err := client.GetPatentRegisterExtract(ctx, date, dpma.PeriodDaily)
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("Register extract: %d bytes\n", len(data))
-```
-
-## Query Validation
-
-The `query` sub-package provides a parser and validator for DPMAregister expert search syntax:
-
-```go
-import "github.com/patent-dev/dpma-connect-plus/query"
-
-// Parse and validate a patent query
-q, err := query.ParseQuery("TI=Elektrofahrzeug AND INH=Siemens", query.ServicePatent)
-if err != nil {
-    log.Fatal(err)
-}
-if err := q.Validate(); err != nil {
-    log.Fatal(err) // e.g. unknown field, unmatched parentheses
-}
-
-// Inspect the query
-fmt.Println(q.GetFields())  // ["TI", "INH"]
-fmt.Println(q.HasField("TI")) // true
-
-// Validate against a specific service
-q, _ = query.ParseQuery("MARKE=test", query.ServiceTrademark) // valid
-q, _ = query.ParseQuery("MARKE=test", query.ServicePatent)    // invalid: unknown field
-
-// Look up field definitions
-f, ok := query.GetField("TI", query.ServicePatent)
-fmt.Println(f.Description) // "title / designation"
-
-// List all valid fields for a service
-fields := query.GetValidFields(query.ServiceDesign)
-```
-
-### Features
-
-- Tokenizer with support for quoted values, comparison operators (`=`, `>=`, `<=`, `>`, `<`), parentheses, and curly braces (procedure data)
-- Field validation per service (Patent, Design, Trademark) based on official DPMAregister field codes
-- Bracket and brace matching
-- Recognizes both English (`AND`, `OR`, `NOT`) and German (`UND`, `ODER`, `NICHT`) Boolean operators
-- Field lookup with German name, English description, and input type (text/date)
-
-## Search Query Syntax
-
-All search methods use [DPMAregister expert search syntax](https://register.dpma.de/DPMAregister/pat/experte). The format is `FIELD=value` with Boolean operators `AND`, `OR`, `NOT`.
-
-### Patent Field Codes
+Common patent field codes:
 
 | Code | Description |
 |------|-------------|
-| `TI` | Title/designation |
-| `INH` | Applicant/proprietor |
-| `IN` | Inventor |
-| `IC` | IPC classification |
-| `AKZ` | File number |
-| `PN` | Publication number |
-| `PUB` | Publication date |
+| `TI` | Bezeichnung/Titel (title / designation) |
+| `INH` | Anmelder/Inhaber (applicant / proprietor) |
+| `IN` | Erfinder (inventor) |
+| `IC` | IPC-Klasse (IPC classification) |
+| `AKZ` | Aktenzeichen (file number / publication number) |
+| `PN` | Veröffentlichungsnummer (publication number) |
+| `AT` | Anmeldetag (filing date) |
+| `PUB` | Publikationstag (publication date) |
+| `ST` | Status |
 | `AB` | Abstract |
 
-### Design Field Codes
+Common design field codes:
 
 | Code | Description |
 |------|-------------|
-| `TI` | Designation |
-| `INH` | Proprietor |
-| `ENTW` | Designer |
-| `ERZ` | Product(s) |
-| `WKL` | Commodity class |
-| `RN` | Registration number |
-| `DNR` | Design number |
+| `TI` | Bezeichnung/Titel (title / designation) |
+| `INH` | Inhaber (proprietor) |
+| `ENTW` | Entwerfer (designer) |
+| `ERZ` | Erzeugnis(se) (product(s)) |
+| `WKL` | Warenklasse (Locarno class) |
+| `RN` | Registernummer (registration number) |
+| `DNR` | Designnummer (design number) |
+| `AT` | Anmeldetag (filing date) |
+| `ET` | Eintragungstag (registration date) |
 
-### Trademark Field Codes
+Common trademark field codes:
 
 | Code | Description |
 |------|-------------|
-| `md` | Trademark text |
-| `INH` | Proprietor |
-| `WKL` | Class(es) |
+| `MARKE` / `md` | Marke (trademark text) |
+| `INH` | Anmelder/Inhaber (applicant / proprietor) |
+| `KL` | Klasse(n) (Nice class(es)) |
+| `BKL` | Bildklasse(n) (Vienna / image class(es)) |
+| `MF` | Markenform (trademark form) |
+| `RN` | Registernummer/Aktenzeichen (registration number / file number) |
+| `AT` | Anmeldetag (filing date) |
+| `ST` | Status |
 
-For a full reference, see the DPMAregister help pages:
+For full field references, see the DPMAregister help pages:
 - [Patent field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/patgbm/index.html)
 - [Design field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/gsm/index.html)
 - [Trademark field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/marken/index.html)
 
-## Error Handling
+### Date and week formatting
 
-The library provides custom error types for different scenarios:
+Publication weeks use `YYYYWW` format (6 digits); register extracts use
+`YYYY-MM-DD`:
+
+```go
+pubWeek, err := dpma.FormatPublicationWeek(2024, 45) // "202445", nil
+year, week, err := dpma.ParsePublicationWeek("202445") // 2024, 45, nil
+
+date := time.Date(2024, 10, 23, 0, 0, 0, 0, time.UTC)
+dateStr := dpma.FormatDate(date) // "2024-10-23"
+```
+
+### Data availability
+
+- **Publication data** is updated weekly: patents/utility models on Thursdays,
+  designs/trademarks on Fridays.
+- **Register data** is updated daily.
+
+`DataNotAvailableError` is common for future publication weeks, very old weeks
+(before digital archiving), and weeks with no publications.
+
+## Error handling
+
+The library returns typed errors you can match with `errors.As`:
 
 ```go
 // Resource not found (404)
-if notFoundErr, ok := err.(*dpma.NotFoundError); ok {
-    fmt.Printf("Not found: %s %s\n", notFoundErr.Resource, notFoundErr.ID)
+var notFoundErr *dpma.NotFoundError
+if errors.As(err, &notFoundErr) {
+    fmt.Printf("not found: %s %s\n", notFoundErr.Resource, notFoundErr.ID)
 }
 
 // Data not available (common for old/future publication weeks)
-if _, ok := err.(*dpma.DataNotAvailableError); ok {
-    fmt.Println("Data not available for the requested period")
+var dataErr *dpma.DataNotAvailableError
+if errors.As(err, &dataErr) {
+    fmt.Println("data not available for the requested period")
 }
 
 // Generic API errors
-if apiErr, ok := err.(*dpma.APIError); ok {
+var apiErr *dpma.APIError
+if errors.As(err, &apiErr) {
     fmt.Printf("API error: %s (code: %s, HTTP %d)\n", apiErr.Message, apiErr.Code, apiErr.StatusCode)
 }
 
 // XML parsing failures (malformed response data)
-if xmlErr, ok := err.(*dpma.XMLParseError); ok {
-    fmt.Printf("Failed to parse response in %s: %v\n", xmlErr.Operation, xmlErr.Unwrap())
+var xmlErr *dpma.XMLParseError
+if errors.As(err, &xmlErr) {
+    fmt.Printf("failed to parse response in %s: %v\n", xmlErr.Operation, xmlErr.Unwrap())
 }
 ```
 
-## Date and Week Formatting
-
-### Publication Week Format
-
-Publication weeks use `YYYYWW` format (6 digits):
-
-```go
-pubWeek, err := dpma.FormatPublicationWeek(2024, 45)  // Returns "202445", nil
-
-year, week, err := dpma.ParsePublicationWeek("202445")  // Returns 2024, 45, nil
-```
-
-### Register Extract Date Format
-
-Register extracts use `YYYY-MM-DD` format:
-
-```go
-date := time.Date(2024, 10, 23, 0, 0, 0, 0, time.UTC)
-dateStr := dpma.FormatDate(date)  // Returns "2024-10-23"
-```
-
-## Services
-
-DPMA Connect Plus provides three services:
-
-| Service | Description | Constant |
-|---------|-------------|----------|
-| Patents & Utility Models | Patent applications, grants, utility models | `dpma.ServicePatent` |
-| Designs | Design applications and registrations | `dpma.ServiceDesign` |
-| Trademarks | Trademark applications and registrations | `dpma.ServiceTrademark` |
-
-## Package Structure
-
-```
-├── client.go              # Core client (Config, NewClient, GetVersion)
-├── client_patent.go       # Patent service methods
-├── client_design.go       # Design service methods
-├── client_trademark.go    # Trademark service methods
-├── errors.go              # Custom error types
-├── helpers.go             # Date/week formatting, constants
-├── query/                 # Query parser and field validation
-│   ├── query.go           # Parser, tokenizer, validator
-│   ├── fields.go          # Field definitions per service
-│   └── query_test.go      # Query package tests
-├── client_test.go         # Core unit tests
-├── client_patent_test.go  # Patent unit tests
-├── client_design_test.go  # Design unit tests
-├── client_trademark_test.go # Trademark unit tests
-├── integration_test.go    # Integration tests (real API)
-├── generated/             # Auto-generated OpenAPI code
-│   ├── types_gen.go       # Generated types
-│   └── client_gen.go      # Generated client
-├── openapi.yaml           # OpenAPI 3.0 specification
-└── demo/                  # Interactive demo application
-    └── demo.go
-```
-
-## Implementation
-
-This library follows a clean architecture:
-
-1. **OpenAPI Specification**: Hand-crafted `openapi.yaml` based on official DPMA documentation
-2. **Code Generation**: Types and client generated using [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen)
-3. **Idiomatic Wrapper**: Clean Go client wrapping generated code with error handling and convenience methods
-
 ## Testing
 
-### Unit Tests (Mock Server)
-
-Offline tests using mock HTTP server with realistic responses:
-
 ```bash
-go test -v
-go test -v -cover
+make test              # unit tests (race), mock HTTP server
+make test-integration  # integration tests (//go:build integration), needs credentials
+make lint
 ```
 
-### Integration Tests (Real API)
-
-Tests that make actual requests to the DPMA API:
+Integration tests hit the live DPMA API and skip unless credentials are set:
 
 ```bash
 export DPMA_CONNECT_PLUS_USERNAME=your-username
 export DPMA_CONNECT_PLUS_PASSWORD=your-password
-
-go test -tags=integration -v
+make test-integration
 ```
 
-**Note**: Integration tests require valid DPMA Connect Plus credentials and will skip if environment variables are not set.
+An interactive demo application is included under `demo/`; it reads the same
+environment variables and offers a menu for the patent, design, and trademark
+services.
 
-## Demo Application
+## Implementation status
 
-An interactive demo application is included:
+Every endpoint of the DPMA Connect Plus API is implemented across the patent,
+design, and trademark services (see the [Usage](#usage) method lists). How much
+of that surface a given account can exercise depends on the permissions DPMA
+grants it.
 
-```bash
-export DPMA_CONNECT_PLUS_USERNAME=your-username
-export DPMA_CONNECT_PLUS_PASSWORD=your-password
+A subset is covered by the integration test suite and verified against the live
+API, including `GetVersion`, the three `Search*` methods (and their `*Parsed`
+variants), `GetPatentInfo` / `GetDesignInfo` / `GetTrademarkInfo`,
+`GetPatentRegisterExtract`, `GetPatentPublicationPDF`,
+`GetDisclosureDocumentsXML`, and `GetDesignBibliographicDataXML`.
 
-cd demo
-go run demo.go
-```
-
-The demo provides an interactive menu for testing all three services: patents, designs, and trademarks.
-
-## Implementation Status
-
-All endpoints defined in the DPMA Connect Plus API are implemented. Verification status depends on the permissions granted to the test account.
-
-### Fully Verified
-
-The following endpoints have been tested against the live API with real data:
-
-| Service | Endpoint | Description |
-|---------|----------|-------------|
-| General | `GetVersion` | Service version info |
-| Patent | `SearchPatent` | Expert search |
-| Patent | `GetRegisterInfo` | Register data for a patent |
-| Patent | `GetFulltextXML` / `Stream` | Full-text XML |
-| Patent | `GetFulltextPDF` / `Stream` | Full-text PDF |
-| Patent | `GetDocumentIdList` | Document IDs for a publication week |
-| Patent | `GetBulkFulltextXML` / `Stream` | Bulk full-text XML |
-| Patent | `GetBulkFulltextPDF` / `Stream` | Bulk full-text PDF |
-| Patent | `GetRegisterExtractXML` / `Stream` | Register extract |
-| Patent | `GetDisclosureDocumentsXML` / `Stream` | Weekly disclosure documents |
-| Design | `SearchDesign` | Expert search |
-| Design | `GetDesignRegisterInfo` | Register data for a design |
-| Trademark | `SearchTrademark` | Expert search |
-| Trademark | `GetTrademarkRegisterInfo` | Register data for a trademark |
-
-### Not Yet Verified (Permission-Restricted)
-
-The following endpoints are implemented but could not be verified with the current test account. We are in talks with DPMA to achieve broader test coverage.
-
-| Service | Endpoint | Description |
-|---------|----------|-------------|
-| Patent | `GetPublicationDataXML` / `Stream` | Weekly publication data |
-| Patent | `GetApplicantCitationsXML` / `Stream` | Applicant citations |
-| Design | `GetDesignBibliographicDataXML` / `Stream` | Bibliographic bulk data |
-| Design | `GetDesignImages` / `Stream` | Design images bulk download |
-| Trademark | `GetTrademarkBibDataApplied` / `Stream` | Applied trademarks bulk data |
-| Trademark | `GetTrademarkBibDataRegistered` / `Stream` | Registered trademarks bulk data |
-| Trademark | `GetTrademarkBibDataRejected` / `Stream` | Rejected trademarks bulk data |
-
-## Data Availability
-
-- **Publication Data**: Updated weekly
-  - Patents/Utility Models: Thursdays
-  - Designs/Trademarks: Fridays
-- **Register Data**: Updated daily
-- **Historical Data**: Varies by document type
-
-**Note**: "Data not available" errors are common for:
-- Future publication weeks
-- Old publication weeks (before digital archiving)
-- Weeks with no publications
+The remaining bulk endpoints (for example `GetPublicationDataXML`,
+`GetApplicantCitationsXML`, `GetDesignImages`, and the
+`GetTrademarkBibData*` methods) are implemented but require permissions the test
+account does not currently hold, so they are not yet exercised end to end.
 
 ## Development
 
-### Regenerating from OpenAPI
-
-If the OpenAPI spec is updated:
+Regenerate the typed client when the OpenAPI spec (`openapi.yaml`) changes:
 
 ```bash
-go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-
-oapi-codegen -package generated -generate types openapi.yaml > generated/types_gen.go
-oapi-codegen -package generated -generate client openapi.yaml > generated/client_gen.go
+make generate
 ```
 
-### Code Quality
+This re-applies any local OpenAPI fixes and runs `go generate ./...`, which
+drives [oapi-codegen](https://github.com/oapi-codegen/oapi-codegen) to rewrite
+`generated/types_gen.go` and `generated/client_gen.go`. Do not edit the files
+under `generated/` by hand.
+
+Other common targets:
 
 ```bash
-go fmt ./...
-go vet ./...
-go test -v ./...
+make fmt     # gofmt
+make lint    # golangci-lint
+make tidy    # go mod tidy
 ```
 
-## Related Projects
+## Related projects
 
 Part of the [patent.dev](https://patent.dev) open-source patent data ecosystem:
 
-- [uspto-odp](https://github.com/patent-dev/uspto-odp) - USPTO Open Data Portal client (search, PTAB, XML full text)
-- [epo-ops](https://github.com/patent-dev/epo-ops) - EPO Open Patent Services client (search, biblio, legal status, family, images)
-- [epo-bdds](https://github.com/patent-dev/epo-bdds) - EPO Bulk Data Distribution Service client
+- [epo-ops](https://github.com/patent-dev/epo-ops) - EPO Open Patent Services client (bibliographic, full text, families, legal status, images)
+- [epo-bdds](https://github.com/patent-dev/epo-bdds) - EPO Bulk Data Distribution Service client (DOCDB, INPADOC, EP full text)
+- [uspto-odp](https://github.com/patent-dev/uspto-odp) - USPTO Open Data Portal client (patents, PTAB, TSDR, full text)
 
 The [bulk-file-loader](https://github.com/patent-dev/bulk-file-loader) uses these libraries for automated patent data downloads.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Credits
-
-**Developed by:**
-- Wolfgang Stark - [patent.dev](https://patent.dev) - [Funktionslust GmbH](https://funktionslust.digital)
+MIT - Funktionslust GmbH / patent.dev.

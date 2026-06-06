@@ -542,9 +542,9 @@ func TestDetectErrorXML(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := detectErrorXML(tt.data)
+			err := parseDPMAError(tt.data, 0)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("detectErrorXML() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("parseDPMAError() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr {

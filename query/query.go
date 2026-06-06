@@ -2,7 +2,6 @@ package query
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 	"unicode"
 )
@@ -158,7 +157,15 @@ func tokenize(query string) []Token {
 			current.WriteRune(ch)
 
 		case (ch == '=' || ch == '<' || ch == '>') && !inQuotes:
-			flushCurrent(TokenField)
+			// Flush any pending token, then retype the immediately preceding
+			// token as a field. Field/equals association is non-positional:
+			// whitespace around the operator ("TI = x") must behave like the
+			// unspaced form ("TI=x"). Whitespace is not emitted as a token, so
+			// the last appended token is the field candidate.
+			flushCurrent(TokenUnknown)
+			if len(tokens) > 0 {
+				tokens[len(tokens)-1].Type = TokenField
+			}
 
 			// Check for compound operators (>=, <=)
 			if (ch == '>' || ch == '<') && i+1 < len(runes) && runes[i+1] == '=' {
@@ -224,10 +231,69 @@ func (q *Query) validate() {
 	q.checkBracketMatching()
 	q.checkBraceMatching()
 	q.checkFieldNames()
+	q.checkOperatorPlacement()
 	q.checkQueryStructure()
 
 	if len(q.Errors) > 0 {
 		q.Valid = false
+	}
+}
+
+// isBooleanOperator reports whether a token is a Boolean operator (AND/OR/NOT
+// and their German equivalents). The "exists" keyword is classified as an
+// operator token but is a unary prefix, so it is excluded here.
+func isBooleanOperator(t Token) bool {
+	return t.Type == TokenOperator && IsValidOperator(t.Value)
+}
+
+// checkOperatorPlacement rejects dangling or adjacent Boolean operators and
+// comparison operators with an empty right-hand side. Examples that fail:
+// "AND TI=a", "TI=a AND", "TI=a AND OR INH=b", "TI=".
+func (q *Query) checkOperatorPlacement() {
+	if len(q.Tokens) == 0 {
+		return
+	}
+
+	// Leading Boolean operator.
+	if isBooleanOperator(q.Tokens[0]) {
+		q.Errors = append(q.Errors, fmt.Sprintf(
+			"query cannot start with operator %q at position %d", q.Tokens[0].Value, q.Tokens[0].Pos,
+		))
+	}
+
+	// Trailing Boolean operator.
+	last := q.Tokens[len(q.Tokens)-1]
+	if isBooleanOperator(last) {
+		q.Errors = append(q.Errors, fmt.Sprintf(
+			"query cannot end with operator %q at position %d", last.Value, last.Pos,
+		))
+	}
+
+	for i, token := range q.Tokens {
+		// Adjacent Boolean operators ("AND OR").
+		if i > 0 && isBooleanOperator(token) && isBooleanOperator(q.Tokens[i-1]) {
+			q.Errors = append(q.Errors, fmt.Sprintf(
+				"adjacent operators %q and %q at position %d", q.Tokens[i-1].Value, token.Value, token.Pos,
+			))
+		}
+
+		// Comparison operator with empty right-hand side. A valid RHS is a value
+		// or a quoted value; anything else (end of input, operator, closing
+		// bracket) means the value is missing.
+		if token.Type == TokenEquals {
+			if i+1 >= len(q.Tokens) {
+				q.Errors = append(q.Errors, fmt.Sprintf(
+					"missing value after %q at position %d", token.Value, token.Pos,
+				))
+				continue
+			}
+			next := q.Tokens[i+1]
+			if next.Type != TokenValue && next.Type != TokenQuote {
+				q.Errors = append(q.Errors, fmt.Sprintf(
+					"missing value after %q at position %d", token.Value, token.Pos,
+				))
+			}
+		}
 	}
 }
 
@@ -323,11 +389,6 @@ func (q *Query) Validate() error {
 		return fmt.Errorf("query validation error: %s", q.Errors[0])
 	}
 	return fmt.Errorf("query validation errors: %s", strings.Join(q.Errors, "; "))
-}
-
-// URLEncode returns the query URL-encoded for use in API requests.
-func (q *Query) URLEncode() string {
-	return url.QueryEscape(q.Raw)
 }
 
 // String returns the raw query string.

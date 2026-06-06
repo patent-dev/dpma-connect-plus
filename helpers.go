@@ -2,6 +2,7 @@ package dpmaconnect
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/patent-dev/dpma-connect-plus/query"
@@ -78,7 +79,16 @@ func ParsePublicationWeek(pubWeek string) (year, week int, err error) {
 	if len(pubWeek) != 6 {
 		return 0, 0, fmt.Errorf("invalid publication week format: expected YYYYWW, got %s", pubWeek)
 	}
-	_, err = fmt.Sscanf(pubWeek, "%04d%02d", &year, &week)
+	for _, c := range pubWeek {
+		if c < '0' || c > '9' {
+			return 0, 0, fmt.Errorf("invalid publication week format: expected YYYYWW digits, got %s", pubWeek)
+		}
+	}
+	year, err = strconv.Atoi(pubWeek[:4])
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse publication week %s: %w", pubWeek, err)
+	}
+	week, err = strconv.Atoi(pubWeek[4:])
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to parse publication week %s: %w", pubWeek, err)
 	}

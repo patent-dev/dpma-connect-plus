@@ -16,6 +16,13 @@ const (
 	FormatBin  FileFormat = "bin"
 )
 
+// maxExampleResponseBytes caps the size of a saved response body. Normal single
+// responses (search hits, PDFs, register extracts) are kept even at tens of MB;
+// only the very large weekly bulk archives (hundreds of MB) are skipped, since
+// they must not be committed as examples or diffed by the weekly response-watch.
+// Oversized responses are recorded as a short size note instead of the full body.
+const maxExampleResponseBytes = 50 << 20 // 50 MiB
+
 // ExampleSaver saves request/response pairs to disk
 type ExampleSaver struct {
 	baseDir string
@@ -36,6 +43,15 @@ func (s *ExampleSaver) SaveExample(endpointName string, requestDesc string, resp
 	requestFile := filepath.Join(dir, "request.txt")
 	if err := os.WriteFile(requestFile, []byte(requestDesc), 0600); err != nil {
 		return fmt.Errorf("failed to save request: %w", err)
+	}
+
+	if len(response) > maxExampleResponseBytes {
+		note := fmt.Sprintf("response omitted: %d bytes (bulk endpoint, exceeds %d byte example cap)\n", len(response), maxExampleResponseBytes)
+		noteFile := filepath.Join(dir, "response.info.txt")
+		if err := os.WriteFile(noteFile, []byte(note), 0600); err != nil {
+			return fmt.Errorf("failed to save response note: %w", err)
+		}
+		return nil
 	}
 
 	responseFile := filepath.Join(dir, fmt.Sprintf("response.%s", format))
@@ -63,11 +79,11 @@ func DetectFormat(data []byte) FileFormat {
 // FormatRequestDescription formats a request description with parameters
 func FormatRequestDescription(method string, params map[string]string) string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Method: %s\n\n", method))
+	fmt.Fprintf(&sb, "Method: %s\n\n", method)
 	if len(params) > 0 {
 		sb.WriteString("Parameters:\n")
 		for k, v := range params {
-			sb.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
+			fmt.Fprintf(&sb, "  %s: %s\n", k, v)
 		}
 	}
 	return sb.String()

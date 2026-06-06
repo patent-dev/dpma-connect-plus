@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/patent-dev/dpma-connect-plus/generated"
@@ -49,41 +50,32 @@ func (c *Client) GetTrademarkThumbnail(ctx context.Context, applicationNumber st
 
 // GetTrademarkBibDataApplied downloads trademark bibliographic data (applied) for a publication week
 func (c *Client) GetTrademarkBibDataApplied(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetTrademarkBibDataAppliedWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get trademark bib data (applied): %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download trademark bib data (applied)")
+	return fetchWeeklyBulk(year, week,
+		"failed to get trademark bib data (applied)", "failed to download trademark bib data (applied)",
+		func(pw string) (*generated.GetTrademarkBibDataAppliedResponse, error) {
+			return c.generated.GetTrademarkBibDataAppliedWithResponse(ctx, pw)
+		},
+		func(r *generated.GetTrademarkBibDataAppliedResponse) []byte { return r.Body })
 }
 
 // GetTrademarkBibDataRegistered downloads trademark bibliographic data (registered) for a publication week
 func (c *Client) GetTrademarkBibDataRegistered(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetTrademarkBibDataRegisteredWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get trademark bib data (registered): %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download trademark bib data (registered)")
+	return fetchWeeklyBulk(year, week,
+		"failed to get trademark bib data (registered)", "failed to download trademark bib data (registered)",
+		func(pw string) (*generated.GetTrademarkBibDataRegisteredResponse, error) {
+			return c.generated.GetTrademarkBibDataRegisteredWithResponse(ctx, pw)
+		},
+		func(r *generated.GetTrademarkBibDataRegisteredResponse) []byte { return r.Body })
 }
 
 // GetTrademarkBibDataRejected downloads trademark bibliographic data (rejected) for a publication week
 func (c *Client) GetTrademarkBibDataRejected(ctx context.Context, year, week int) ([]byte, error) {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := c.generated.GetTrademarkBibDataRejectedWithResponse(ctx, pubWeek)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get trademark bib data (rejected): %w", err)
-	}
-	return bulkResult(resp.Body, resp.StatusCode(), "failed to download trademark bib data (rejected)")
+	return fetchWeeklyBulk(year, week,
+		"failed to get trademark bib data (rejected)", "failed to download trademark bib data (rejected)",
+		func(pw string) (*generated.GetTrademarkBibDataRejectedResponse, error) {
+			return c.generated.GetTrademarkBibDataRejectedWithResponse(ctx, pw)
+		},
+		func(r *generated.GetTrademarkBibDataRejectedResponse) []byte { return r.Body })
 }
 
 // GetTrademarkRegisterExtract downloads trademark register extract data for a date and period
@@ -119,32 +111,20 @@ func (c *Client) GetTrademarkInfoParsed(ctx context.Context, applicationNumber s
 
 // GetTrademarkBibDataAppliedStream downloads trademark bib data (applied) and writes to dst
 func (c *Client) GetTrademarkBibDataAppliedStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetTrademarkBibDataApplied(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get trademark bib data (applied)", dst)
+	return streamWeekly(year, week, "failed to get trademark bib data (applied)", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetTrademarkBibDataApplied(ctx, pw) })
 }
 
 // GetTrademarkBibDataRegisteredStream downloads trademark bib data (registered) and writes to dst
 func (c *Client) GetTrademarkBibDataRegisteredStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetTrademarkBibDataRegistered(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get trademark bib data (registered)", dst)
+	return streamWeekly(year, week, "failed to get trademark bib data (registered)", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetTrademarkBibDataRegistered(ctx, pw) })
 }
 
 // GetTrademarkBibDataRejectedStream downloads trademark bib data (rejected) and writes to dst
 func (c *Client) GetTrademarkBibDataRejectedStream(ctx context.Context, year, week int, dst io.Writer) error {
-	pubWeek, err := FormatPublicationWeek(year, week)
-	if err != nil {
-		return err
-	}
-	resp, err := c.generated.GetTrademarkBibDataRejected(ctx, pubWeek)
-	return streamResponse(resp, err, "failed to get trademark bib data (rejected)", dst)
+	return streamWeekly(year, week, "failed to get trademark bib data (rejected)", dst,
+		func(pw string) (*http.Response, error) { return c.generated.GetTrademarkBibDataRejected(ctx, pw) })
 }
 
 // GetTrademarkRegisterExtractStream downloads trademark register extract data and writes to dst

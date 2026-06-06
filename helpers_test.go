@@ -183,6 +183,27 @@ func TestParsePublicationWeek(t *testing.T) {
 			wantW:   0,
 			wantErr: true,
 		},
+		{
+			name:    "embedded space",
+			pubWeek: "2024 5",
+			wantY:   0,
+			wantW:   0,
+			wantErr: true,
+		},
+		{
+			name:    "trailing letter",
+			pubWeek: "20245a",
+			wantY:   0,
+			wantW:   0,
+			wantErr: true,
+		},
+		{
+			name:    "leading space",
+			pubWeek: " 20245",
+			wantY:   0,
+			wantW:   0,
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {

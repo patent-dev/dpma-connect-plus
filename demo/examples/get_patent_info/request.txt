@@ -1,0 +1,4 @@
+Method: get_patent_info
+
+Parameters:
+  registeredNumber: 100273602

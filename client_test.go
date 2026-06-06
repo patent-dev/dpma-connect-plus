@@ -173,7 +173,7 @@ func TestGetVersion(t *testing.T) {
 				}
 
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.response))
+				_, _ = w.Write([]byte(tt.response))
 			}
 
 			server, client := setupMockServer(t, handler)
@@ -276,10 +276,10 @@ func TestCheckErrorResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := checkErrorResponse(tt.body, tt.statusCode)
+			err := parseDPMAError(tt.body, tt.statusCode)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("checkErrorResponse() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("parseDPMAError() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -287,11 +287,11 @@ func TestCheckErrorResponse(t *testing.T) {
 				switch tt.errType {
 				case "DataNotAvailableError":
 					if _, ok := err.(*DataNotAvailableError); !ok {
-						t.Errorf("checkErrorResponse() error type = %T, want *DataNotAvailableError", err)
+						t.Errorf("parseDPMAError() error type = %T, want *DataNotAvailableError", err)
 					}
 				case "APIError":
 					if _, ok := err.(*APIError); !ok {
-						t.Errorf("checkErrorResponse() error type = %T, want *APIError", err)
+						t.Errorf("parseDPMAError() error type = %T, want *APIError", err)
 					}
 				}
 			}
@@ -311,7 +311,7 @@ func TestCheckErrorResponse_DesignTransactionBody(t *testing.T) {
     </TransactionErrorDetails>
   </DesignTransactionBody>
 </Transaction>`)
-	err := checkErrorResponse(body, http.StatusOK)
+	err := parseDPMAError(body, http.StatusOK)
 	if err == nil {
 		t.Fatal("expected error for DesignTransactionBody error")
 	}
@@ -332,7 +332,7 @@ func TestCheckErrorResponse_PatentTransactionBody(t *testing.T) {
     </TransactionErrorDetails>
   </PatentTransactionBody>
 </Transaction>`)
-	err := checkErrorResponse(body, http.StatusForbidden)
+	err := parseDPMAError(body, http.StatusForbidden)
 	if err == nil {
 		t.Fatal("expected error for PatentTransactionBody error")
 	}
@@ -350,13 +350,13 @@ func TestCheckErrorResponse_ValidXMLEmptyCodes(t *testing.T) {
 	body := []byte(`<?xml version="1.0"?><Transaction><TransactionHeader/><TradeMarkTransactionBody/></Transaction>`)
 
 	// With 200, should return nil (not an error)
-	err := checkErrorResponse(body, http.StatusOK)
+	err := parseDPMAError(body, http.StatusOK)
 	if err != nil {
 		t.Errorf("expected nil for valid XML with empty codes on 200, got %v", err)
 	}
 
 	// With 400, empty codes in XML so falls through to fallback
-	err = checkErrorResponse(body, http.StatusBadRequest)
+	err = parseDPMAError(body, http.StatusBadRequest)
 	if err == nil {
 		t.Error("expected error for valid XML with empty codes on 400")
 	}
@@ -364,7 +364,7 @@ func TestCheckErrorResponse_ValidXMLEmptyCodes(t *testing.T) {
 
 func TestCheckErrorResponse_LongBodyTruncated(t *testing.T) {
 	body := bytes.Repeat([]byte("x"), 500)
-	err := checkErrorResponse(body, http.StatusInternalServerError)
+	err := parseDPMAError(body, http.StatusInternalServerError)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -569,7 +569,7 @@ func TestStreamResponse_ValidXMLNonError(t *testing.T) {
 }
 
 func TestBulkMethodsRejectInvalidWeek(t *testing.T) {
-	server, client := setupMockServer(t, func(w http.ResponseWriter, r *http.Request) {
+	server, client := setupMockServer(t, func(w http.ResponseWriter, _ *http.Request) {
 		t.Error("server should not be called for invalid week")
 		w.WriteHeader(http.StatusOK)
 	})
@@ -598,7 +598,7 @@ func TestBulkMethodsRejectInvalidWeek(t *testing.T) {
 }
 
 func TestRegisterExtractRejectsInvalidPeriod(t *testing.T) {
-	server, client := setupMockServer(t, func(w http.ResponseWriter, r *http.Request) {
+	server, client := setupMockServer(t, func(w http.ResponseWriter, _ *http.Request) {
 		t.Error("server should not be called for invalid period")
 		w.WriteHeader(http.StatusOK)
 	})
@@ -634,7 +634,7 @@ func TestCustomHTTPClient(t *testing.T) {
 			headerSeen = true
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, _ = w.Write([]byte("ok"))
 	}))
 	defer server.Close()
 
@@ -669,4 +669,112 @@ type headerTransport struct {
 func (ht *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set(ht.header, ht.value)
 	return http.DefaultTransport.RoundTrip(req)
+}
+
+// TestParseDPMAError_SimpleErrorFormat verifies that the <Error Message_DE.../>
+// format is detected by the unified error path (previously only the <Transaction>
+// format was caught on the raw []byte methods).
+func TestParseDPMAError_SimpleErrorFormat(t *testing.T) {
+	body := []byte(`<?xml version="1.0" encoding="UTF-8"?>` +
+		`<Error Message_DE="Nicht gefunden" Message_EN="Not found"/>`)
+
+	err := parseDPMAError(body, http.StatusBadRequest)
+	if err == nil {
+		t.Fatal("expected error for <Error> format")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected *APIError, got %T", err)
+	}
+	if apiErr.Message != "Not found" {
+		t.Errorf("Message = %q, want %q", apiErr.Message, "Not found")
+	}
+	if apiErr.StatusCode != http.StatusBadRequest {
+		t.Errorf("StatusCode = %d, want %d", apiErr.StatusCode, http.StatusBadRequest)
+	}
+}
+
+// TestParseDPMAError_SimpleErrorFormatGermanFallback verifies the German message
+// is used when no English message is present.
+func TestParseDPMAError_SimpleErrorFormatGermanFallback(t *testing.T) {
+	body := []byte(`<Error Message_DE="Nur Deutsch"/>`)
+	err := parseDPMAError(body, http.StatusOK)
+	if err == nil {
+		t.Fatal("expected error for <Error> format with only German message")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected *APIError, got %T", err)
+	}
+	if apiErr.Message != "Nur Deutsch" {
+		t.Errorf("Message = %q, want %q", apiErr.Message, "Nur Deutsch")
+	}
+}
+
+// TestAPIError_OmitsHTTPZero verifies that APIError.Error() omits the "(HTTP 0)"
+// suffix when no status code is available.
+func TestAPIError_OmitsHTTPZero(t *testing.T) {
+	withStatus := (&APIError{Code: "E002", Message: "boom", StatusCode: 403}).Error()
+	if !strings.Contains(withStatus, "(HTTP 403)") {
+		t.Errorf("expected HTTP suffix, got %q", withStatus)
+	}
+
+	noStatus := (&APIError{Code: "E002", Message: "boom"}).Error()
+	if strings.Contains(noStatus, "HTTP") {
+		t.Errorf("expected no HTTP suffix for StatusCode 0, got %q", noStatus)
+	}
+
+	noStatusNoCode := (&APIError{Message: "boom"}).Error()
+	if strings.Contains(noStatusNoCode, "HTTP") {
+		t.Errorf("expected no HTTP suffix for StatusCode 0, got %q", noStatusNoCode)
+	}
+}
+
+// TestGetPatentInfo_DetectsSimpleErrorFormat verifies the raw []byte path returns
+// a typed error for the <Error Message_DE.../> format instead of handing the error
+// XML back to the caller as if it were data.
+func TestGetPatentInfo_DetectsSimpleErrorFormat(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`<Error Message_DE="Nicht gefunden" Message_EN="Not found"/>`))
+	}
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	_, err := client.GetPatentInfo(context.Background(), "100273629")
+	if err == nil {
+		t.Fatal("expected error for <Error> response, got nil")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected *APIError, got %T: %v", err, err)
+	}
+	if apiErr.Message != "Not found" {
+		t.Errorf("Message = %q, want %q", apiErr.Message, "Not found")
+	}
+}
+
+// TestGetVersion_DetectsErrorXML verifies that GetVersion runs the body through the
+// unified error check even on a 200 response.
+func TestGetVersion_DetectsErrorXML(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`<Error Message_DE="Dienst nicht verfügbar" Message_EN="Service unavailable"/>`))
+	}
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	_, err := client.GetVersion(context.Background(), ServicePatent)
+	if err == nil {
+		t.Fatal("expected error for error XML on 200, got nil")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected *APIError, got %T: %v", err, err)
+	}
+	if apiErr.Message != "Service unavailable" {
+		t.Errorf("Message = %q, want %q", apiErr.Message, "Service unavailable")
+	}
 }

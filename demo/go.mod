@@ -1,6 +1,6 @@
-module demo
+module github.com/patent-dev/dpma-connect-plus/demo
 
-go 1.25.0
+go 1.26.1
 
 replace github.com/patent-dev/dpma-connect-plus => ../
 

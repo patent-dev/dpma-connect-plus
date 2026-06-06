@@ -1,6 +1,7 @@
 package dpmaconnect
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net/http"
@@ -12,7 +13,7 @@ func TestSearchPatents(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(patentSearchXML)
+		_, _ = w.Write(patentSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -28,7 +29,7 @@ func TestSearchPatents(t *testing.T) {
 }
 
 func TestSearchPatents_Unauthorized(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 
@@ -53,9 +54,9 @@ func TestSearchPatentsXMLErrorOn200(t *testing.T) {
     </TransactionErrorDetails>
   </TradeMarkTransactionBody>
 </Transaction>`
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(xmlErr))
+		_, _ = w.Write([]byte(xmlErr))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -76,7 +77,7 @@ func TestGetPatentPublicationPDF(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getPatentpublikation_PDF/DE102023000001A1")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("%PDF-1.4 fake content"))
+		_, _ = w.Write([]byte("%PDF-1.4 fake content"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -92,7 +93,7 @@ func TestGetPatentPublicationPDF(t *testing.T) {
 }
 
 func TestGetPatentPublicationPDF_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -113,7 +114,7 @@ func TestGetPatentInfo(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/100273602")
 		w.WriteHeader(http.StatusOK)
-		w.Write(patentInfoXML)
+		_, _ = w.Write(patentInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -129,7 +130,7 @@ func TestGetPatentInfo(t *testing.T) {
 }
 
 func TestGetPatentInfo_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -150,7 +151,7 @@ func TestGetSearchableFullText(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getRecherchierbarerVolltext/DE102019200907A1")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("%PDF-fulltext"))
+		_, _ = w.Write([]byte("%PDF-fulltext"))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -166,7 +167,7 @@ func TestGetSearchableFullText(t *testing.T) {
 }
 
 func TestGetSearchableFullText_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -187,7 +188,7 @@ func TestSearchPatentsParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/search/")
 		w.WriteHeader(http.StatusOK)
-		w.Write(patentSearchXML)
+		_, _ = w.Write(patentSearchXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -213,7 +214,7 @@ func TestGetPatentInfoParsed(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/100273602")
 		w.WriteHeader(http.StatusOK)
-		w.Write(patentInfoXML)
+		_, _ = w.Write(patentInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -260,7 +261,7 @@ func TestGetPatentInfoParsed_RegisteredNumber(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/100273629")
 		w.WriteHeader(http.StatusOK)
-		w.Write(patentInfoXML)
+		_, _ = w.Write(patentInfoXML)
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -285,11 +286,11 @@ func TestGetPatentInfoParsed_PublicationNumber(t *testing.T) {
 		if reqCount == 1 {
 			// First request: search by PN=DE10027362C2
 			requirePath(t, r, "/DPMAregisterPatService/search/")
-			w.Write(patentSearchXML)
+			_, _ = w.Write(patentSearchXML)
 		} else {
 			// Second request: get info by registered number from search result
 			requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/")
-			w.Write(patentInfoXML)
+			_, _ = w.Write(patentInfoXML)
 		}
 	}
 
@@ -309,7 +310,7 @@ func TestGetPatentInfoParsed_PublicationNumber(t *testing.T) {
 }
 
 func TestGetPatentInfoParsed_NotFound_RegisteredNumber(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 
@@ -326,9 +327,9 @@ func TestGetPatentInfoParsed_NotFound_RegisteredNumber(t *testing.T) {
 }
 
 func TestGetPatentInfoParsed_NotFound_PublicationNumber(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`))
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -354,10 +355,10 @@ func TestGetPatentInfoByPublicationNumber(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		if reqCount == 1 {
 			requirePath(t, r, "/DPMAregisterPatService/search/")
-			w.Write(patentSearchXML)
+			_, _ = w.Write(patentSearchXML)
 		} else {
 			requirePath(t, r, "/DPMAregisterPatService/getRegisterInfo/")
-			w.Write(patentInfoXML)
+			_, _ = w.Write(patentInfoXML)
 		}
 	}
 
@@ -377,9 +378,9 @@ func TestGetPatentInfoByPublicationNumber(t *testing.T) {
 }
 
 func TestGetPatentInfoByPublicationNumber_NotFound(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`))
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -410,7 +411,7 @@ func TestGetDisclosureDocumentsXML_DataNotAvailable(t *testing.T) {
 		requireAuth(t, r)
 		requirePath(t, r, "/DPMAregisterPatService/getOffenlegungsschriften_Volltext_XML/202445")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(xmlErr))
+		_, _ = w.Write([]byte(xmlErr))
 	}
 
 	server, client := setupMockServer(t, handler)
@@ -422,5 +423,67 @@ func TestGetDisclosureDocumentsXML_DataNotAvailable(t *testing.T) {
 	}
 	if _, ok := err.(*DataNotAvailableError); !ok {
 		t.Errorf("expected *DataNotAvailableError, got %T", err)
+	}
+}
+
+// TestWeeklyBulkHelper_Success verifies the fetchWeeklyBulk-backed methods format
+// the publication week, call the endpoint, and return the body on success.
+func TestWeeklyBulkHelper_Success(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		requirePath(t, r, "/202407")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("PK\x03\x04binary-zip"))
+	}
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	data, err := client.GetPatentSpecificationsXML(context.Background(), 2024, 7)
+	if err != nil {
+		t.Fatalf("GetPatentSpecificationsXML() error = %v", err)
+	}
+	if len(data) == 0 {
+		t.Error("expected non-empty body")
+	}
+}
+
+// TestWeeklyBulkHelper_InvalidWeek verifies the helper rejects an invalid week
+// before making any HTTP call.
+func TestWeeklyBulkHelper_InvalidWeek(t *testing.T) {
+	called := false
+	handler := func(w http.ResponseWriter, _ *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	}
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	_, err := client.GetUtilityModelsPDF(context.Background(), 2024, 99)
+	if err == nil {
+		t.Fatal("expected error for invalid week")
+	}
+	if called {
+		t.Error("HTTP call should not be made for an invalid week")
+	}
+}
+
+// TestWeeklyStreamHelper_Success verifies the streamWeekly-backed methods stream
+// the response body to the destination writer.
+func TestWeeklyStreamHelper_Success(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		requirePath(t, r, "/202407")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("PK\x03\x04binary-zip-payload"))
+	}
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	var buf bytes.Buffer
+	if err := client.GetPatentSpecificationsXMLStream(context.Background(), 2024, 7, &buf); err != nil {
+		t.Fatalf("GetPatentSpecificationsXMLStream() error = %v", err)
+	}
+	if buf.Len() == 0 {
+		t.Error("expected streamed bytes")
 	}
 }

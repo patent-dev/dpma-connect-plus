@@ -16,7 +16,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -109,45 +108,6 @@ func NewClient(config *Config) (*Client, error) {
 	}, nil
 }
 
-// checkErrorResponse attempts to parse XML error response.
-// The DPMA API returns errors in Transaction XML with service-specific body
-// elements (TradeMarkTransactionBody, DesignTransactionBody, PatentTransactionBody).
-func checkErrorResponse(body []byte, statusCode int) error {
-	var errResp ErrorResponse
-	if err := xml.Unmarshal(body, &errResp); err == nil {
-		code, text := errResp.errorCodeAndText()
-
-		// Check for "Data not available" error (code can be "E001" or "Error")
-		if (code == "E001" || code == "Error") && text == "Data not available" {
-			return &DataNotAvailableError{}
-		}
-
-		if code != "" || text != "" {
-			return &APIError{
-				Code:       code,
-				Message:    text,
-				StatusCode: statusCode,
-			}
-		}
-	}
-
-	// If XML parsing failed and status indicates an error, return fallback with body preview
-	if statusCode >= 400 {
-		runes := []rune(string(body))
-		var preview string
-		if len(runes) > 200 {
-			preview = string(runes[:200]) + "..."
-		} else {
-			preview = string(body)
-		}
-		return &APIError{
-			Message:    fmt.Sprintf("unexpected error response: %s", preview),
-			StatusCode: statusCode,
-		}
-	}
-	return nil
-}
-
 // GetVersion retrieves version information for a service
 func (c *Client) GetVersion(ctx context.Context, service string) (string, error) {
 	resp, err := c.generated.GetVersionWithResponse(ctx, generated.GetVersionParamsService(service))
@@ -155,6 +115,9 @@ func (c *Client) GetVersion(ctx context.Context, service string) (string, error)
 		return "", fmt.Errorf("failed to get version: %w", err)
 	}
 
+	if apiErr := parseDPMAError(resp.Body, resp.StatusCode()); apiErr != nil {
+		return "", apiErr
+	}
 	if resp.StatusCode() != http.StatusOK {
 		return "", &APIError{
 			Message:    "failed to get version",
@@ -183,7 +146,7 @@ func streamResponse(resp *http.Response, err error, errMsg string, dst io.Writer
 		if err != nil {
 			return fmt.Errorf("failed to read error response: %w", err)
 		}
-		if apiErr := checkErrorResponse(body, resp.StatusCode); apiErr != nil {
+		if apiErr := parseDPMAError(body, resp.StatusCode); apiErr != nil {
 			return apiErr
 		}
 		return &APIError{Message: errMsg, StatusCode: resp.StatusCode}
@@ -211,7 +174,7 @@ func streamResponse(resp *http.Response, err error, errMsg string, dst io.Writer
 		full := make([]byte, 0, len(peek)+len(rest))
 		full = append(full, peek...)
 		full = append(full, rest...)
-		if apiErr := checkErrorResponse(full, resp.StatusCode); apiErr != nil {
+		if apiErr := parseDPMAError(full, resp.StatusCode); apiErr != nil {
 			return apiErr
 		}
 		// Valid XML that isn't an error - write it out
@@ -236,7 +199,7 @@ func streamResponse(resp *http.Response, err error, errMsg string, dst io.Writer
 // It checks for XML error responses even on 200 OK, since the DPMA API
 // returns errors with 200 status for some endpoints.
 func bulkResult(body []byte, statusCode int, errMsg string) ([]byte, error) {
-	if apiErr := checkErrorResponse(body, statusCode); apiErr != nil {
+	if apiErr := parseDPMAError(body, statusCode); apiErr != nil {
 		return nil, apiErr
 	}
 	if statusCode != http.StatusOK {
@@ -251,4 +214,49 @@ func resourceResult(body []byte, statusCode int, resource, id, errMsg string) ([
 		return nil, &NotFoundError{Resource: resource, ID: id}
 	}
 	return bulkResult(body, statusCode, errMsg)
+}
+
+// weeklyResponse describes the shape shared by all generated *WithResponse types
+// for weekly bulk endpoints: a buffered body plus an HTTP status code.
+type weeklyResponse interface {
+	StatusCode() int
+}
+
+// fetchWeeklyBulk formats the publication week, invokes a generated buffered call,
+// and runs the response through bulkResult. It removes the per-endpoint copy-paste
+// while keeping each public method's signature unchanged.
+//
+// body extracts the buffered bytes from the generated response (which expose Body
+// as a field, not reachable through a generic constraint).
+func fetchWeeklyBulk[R weeklyResponse](
+	year, week int,
+	getErrMsg, downloadErrMsg string,
+	call func(pubWeek string) (R, error),
+	body func(R) []byte,
+) ([]byte, error) {
+	pubWeek, err := FormatPublicationWeek(year, week)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := call(pubWeek)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", getErrMsg, err)
+	}
+	return bulkResult(body(resp), resp.StatusCode(), downloadErrMsg)
+}
+
+// streamWeekly formats the publication week, invokes a generated streaming call,
+// and streams the result to dst via streamResponse.
+func streamWeekly(
+	year, week int,
+	getErrMsg string,
+	dst io.Writer,
+	call func(pubWeek string) (*http.Response, error),
+) error {
+	pubWeek, err := FormatPublicationWeek(year, week)
+	if err != nil {
+		return err
+	}
+	resp, err := call(pubWeek)
+	return streamResponse(resp, err, getErrMsg, dst)
 }

@@ -1,0 +1,4 @@
+Method: search_patents
+
+Parameters:
+  query: TI=Elektrofahrzeug

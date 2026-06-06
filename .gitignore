@@ -22,4 +22,10 @@ demo/demo
 demo/*.xml
 demo/*.zip
 demo/*.pdf
-demo/examples/
+
+# Internal / dev-only files (not part of a public release)
+IMPLEMENTATION_GUIDE.md
+Implemented.md
+
+# Vendored reference specs (large binaries kept locally, not shipped)
+resources/*.pdf
