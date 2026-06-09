@@ -49,6 +49,21 @@ type simpleErrorResponse struct {
 	MessageEN string   `xml:"Message_EN,attr"`
 }
 
+// hitListErrorResponse represents an error reported inside a search hit-list
+// envelope. The patent/trademark search service returns a bad query as
+// <HitList><ErrorMessage>...</ErrorMessage></HitList> (the message text itself
+// carries embedded Message_DE/Message_EN strings), while the design search
+// service returns <DesignHitList HitCount="0" Message_DE="..." Message_EN="..."/>.
+//
+// All three hit-list roots (PatentHitList, HitList, DesignHitList) are matched
+// by allowing the XMLName to be empty; only the presence of an error marker
+// (ErrorMessage element or Message_* attribute) flags an error.
+type hitListErrorResponse struct {
+	ErrorMessage string `xml:"ErrorMessage"`
+	MessageDE    string `xml:"Message_DE,attr"`
+	MessageEN    string `xml:"Message_EN,attr"`
+}
+
 // NotFoundError represents resource not found errors
 type NotFoundError struct {
 	Resource string
@@ -121,6 +136,28 @@ func parseDPMAError(body []byte, statusCode int) error {
 		msg := simpleErr.MessageEN
 		if msg == "" {
 			msg = simpleErr.MessageDE
+		}
+		if msg != "" {
+			return &APIError{
+				Code:       "Error",
+				Message:    msg,
+				StatusCode: statusCode,
+			}
+		}
+	}
+
+	// Try hit-list error envelopes: <HitList><ErrorMessage> (patent/trademark)
+	// and <DesignHitList HitCount="0" Message_DE=.../> (design). These arrive
+	// with HTTP 200 and an otherwise empty hit list, so without this check a bad
+	// query would silently parse as zero hits instead of surfacing an error.
+	var hitErr hitListErrorResponse
+	if err := xml.Unmarshal(body, &hitErr); err == nil {
+		msg := hitErr.ErrorMessage
+		if msg == "" {
+			msg = hitErr.MessageEN
+		}
+		if msg == "" {
+			msg = hitErr.MessageDE
 		}
 		if msg != "" {
 			return &APIError{

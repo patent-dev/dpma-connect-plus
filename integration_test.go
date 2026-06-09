@@ -6,9 +6,22 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
+
+// skipIfNoPermission turns the known "No permission of user=sip for right=..."
+// entitlement limit into a test skip. The DPMA test account does not have
+// access to every bulk endpoint; that is an account limitation, not a client
+// bug, so such responses must not fail the suite.
+func skipIfNoPermission(t *testing.T, err error) {
+	t.Helper()
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && strings.Contains(apiErr.Message, "No permission of user") {
+		t.Skipf("account lacks entitlement: %v", err)
+	}
+}
 
 func getTestClient(t *testing.T) *Client {
 	username := os.Getenv("DPMA_CONNECT_PLUS_USERNAME")
@@ -247,6 +260,7 @@ func TestIntegration_GetDesignBibliographicDataXML(t *testing.T) {
 			t.Logf("Data not available for %d week %d", year, week)
 			return
 		}
+		skipIfNoPermission(t, err)
 		t.Errorf("GetDesignBibliographicDataXML(%d, %d) error = %v", year, week, err)
 		return
 	}
@@ -271,6 +285,7 @@ func TestIntegration_GetTrademarkBibDataApplied(t *testing.T) {
 			t.Logf("Data not available for %d week %d", year, week)
 			return
 		}
+		skipIfNoPermission(t, err)
 		t.Errorf("GetTrademarkBibDataApplied(%d, %d) error = %v", year, week, err)
 		return
 	}

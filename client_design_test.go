@@ -149,8 +149,8 @@ func TestSearchDesignsParsed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SearchDesignsParsed() error = %v", err)
 	}
-	if result.TotalHits != 3 {
-		t.Errorf("TotalHits = %d, want 3", result.TotalHits)
+	if result.TotalHits != 4 {
+		t.Errorf("TotalHits = %d, want 4", result.TotalHits)
 	}
 	if result.Hits[0].DesignIdentifier != "M9000603-0001" {
 		t.Errorf("Hits[0].DesignIdentifier = %q", result.Hits[0].DesignIdentifier)

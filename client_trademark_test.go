@@ -149,8 +149,8 @@ func TestSearchTrademarksParsed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SearchTrademarksParsed() error = %v", err)
 	}
-	if result.TotalHits != 3 {
-		t.Errorf("TotalHits = %d, want 3", result.TotalHits)
+	if result.TotalHits != 4 {
+		t.Errorf("TotalHits = %d, want 4", result.TotalHits)
 	}
 }
 

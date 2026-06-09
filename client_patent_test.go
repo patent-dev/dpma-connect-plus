@@ -198,11 +198,11 @@ func TestSearchPatentsParsed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SearchPatentsParsed() error = %v", err)
 	}
-	if result.TotalHits != 3 {
-		t.Errorf("TotalHits = %d, want 3", result.TotalHits)
+	if result.TotalHits != 4 {
+		t.Errorf("TotalHits = %d, want 4", result.TotalHits)
 	}
-	if len(result.Hits) != 3 {
-		t.Errorf("len(Hits) = %d, want 3", len(result.Hits))
+	if len(result.Hits) != 4 {
+		t.Errorf("len(Hits) = %d, want 4", len(result.Hits))
 	}
 	if result.Hits[0].Title != "Elektrofahrzeug" {
 		t.Errorf("Hits[0].Title = %q", result.Hits[0].Title)
