@@ -1,0 +1,3 @@
+# Exported *Client methods that are NOT endpoints and so need no
+# TestIntegration<Method> (one name per line). All 56 current Client methods are
+# real DPMA endpoints, so this list is empty; it exists for future helpers.

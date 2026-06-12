@@ -8,19 +8,57 @@ import (
 	"testing"
 )
 
-// This is the XML analogue of a strict-decode (DisallowUnknownFields) JSON test.
+// dpma-connect-plus speaks XML, so this is the XML analogue of the strict-decode
+// (DisallowUnknownFields) JSON fixture tests used by the JSON clients in this
+// repo. Every PARSED endpoint is asserted three ways over the committed
+// testdata/*.xml fixtures (real recorded DPMA responses), in the normal build
+// with no credentials:
 //
-// encoding/xml silently drops any element or attribute that no struct field
-// maps to, so an incomplete struct loses real data without any error. These
-// tests guard against that regression: for each recorded response fixture they
-// collect every element path and attribute actually present in the XML, then
-// assert that the corresponding raw struct captures every one of them via an
-// `xml:"..."` tag. A newly appearing (or previously dropped) element makes the
-// test fail until it is modeled.
+//	(a) ELEMENT COVERAGE  (TestXMLCompleteness) - encoding/xml silently drops any
+//	    element or attribute that no struct field maps to, so an incomplete struct
+//	    loses real data without any error. For each fixture we collect every
+//	    element path and attribute actually present in the XML, then assert the
+//	    raw struct captures every one of them via an `xml:"..."` tag. A newly
+//	    appearing (or previously dropped) element fails the test until it is
+//	    modeled.
+//	(b) GOLDEN ROUND-TRIP (TestXMLGoldenRoundTrip) - re-marshal the decoded raw
+//	    struct and assert that, for every element path the struct models, the
+//	    re-marshaled values reproduce the fixture's values. This proves the
+//	    modeled projection is lossless: a value that decoded but did not survive a
+//	    re-marshal (a wrong/ambiguous tag) is caught.
+//	(c) KEY FIELDS        (TestParse* in xml_test.go) - 3-6 targeted value
+//	    assertions per endpoint through the public Parse* functions, proving each
+//	    value parsed into the right typed field.
 //
-// The check matches encoding/xml semantics: matching is by local element name
-// (namespace prefixes such as de: are ignored, exactly as the decoder ignores
-// them), and paths are rooted at the response's top-level element.
+// The six raw shapes here cover every parsed Client endpoint:
+//	xmlPatentHitList        <- SearchPatentsParsed
+//	xmlDPMAPatentDocument   <- GetPatentInfoParsed / GetPatentInfoByPublicationNumber
+//	xmlTrademarkHitList     <- SearchTrademarksParsed
+//	xmlTrademarkTransaction <- GetTrademarkInfoParsed
+//	xmlDesignHitList        <- SearchDesignsParsed
+//	xmlDesignTransaction    <- GetDesignInfoParsed
+//
+// RAW XML endpoints (Get...XML returning the raw bytes), PDF endpoints and
+// image/thumbnail endpoints are NOT parsed, so they get a minimal well-formed /
+// non-empty / format-magic contract instead of the three layers; those contracts
+// are exercised live in integration_test.go (per-endpoint). None of the six raw
+// structs uses a custom UnmarshalXML, so all six round-trip; if one ever did, its
+// round-trip case would be skipped with a documented reason (see assertRoundTrip).
+//
+// The element/round-trip checks match encoding/xml semantics: matching is by
+// local element name (namespace prefixes such as de: are ignored, exactly as the
+// decoder ignores them), and paths are rooted at the response's top-level element.
+//
+// Round-trip NORMALIZATION rules (see roundTripValues / equalMultisetVals):
+//   - whitespace: each captured chardata value is TrimSpace'd; values that are
+//     empty after trimming are ignored (self-closing vs empty-element noise).
+//   - namespace: prefixes are dropped; comparison is by local name only.
+//   - order: values for a path are compared as a MULTISET (order-insensitive), so
+//     sibling re-ordering by the marshaler does not cause a false diff.
+//   - root: the leading root segment is stripped from every path so a raw struct
+//     that re-marshals under a differing root name still lines up on its subtree.
+//   - scope: only paths the struct MODELS are compared; unmodeled paths are the
+//     job of layer (a) element coverage, not round-trip.
 
 // schemaPaths reflects over a raw XML struct type and returns the set of
 // element paths and attribute paths it can decode. Element paths look like
@@ -221,4 +259,160 @@ func TestXMLCompleteness(t *testing.T) {
 			assertComplete(t, c.name, c.data, reflect.TypeOf(c.raw))
 		})
 	}
+}
+
+// roundTripCases is the authoritative table mapping each parsed shape to its
+// fixture and raw unmarshal struct. It mirrors the TestXMLCompleteness table:
+// the same six shapes cover every parsed Client endpoint.
+func roundTripCases() []struct {
+	name string
+	data []byte
+	raw  any
+	skip string // non-empty: documented reason this shape cannot re-marshal
+} {
+	return []struct {
+		name string
+		data []byte
+		raw  any
+		skip string
+	}{
+		{name: "patent_search", data: patentSearchXML, raw: xmlPatentHitList{}},
+		{name: "patent_info", data: patentInfoXML, raw: xmlDPMAPatentDocument{}},
+		{name: "trademark_search", data: trademarkSearchXML, raw: xmlTrademarkHitList{}},
+		{name: "trademark_info", data: trademarkInfoXML, raw: xmlTrademarkTransaction{}},
+		{name: "design_search", data: designSearchXML, raw: xmlDesignHitList{}},
+		{name: "design_info", data: designInfoXML, raw: xmlDesignTransaction{}},
+	}
+}
+
+// TestXMLGoldenRoundTrip runs layer (b): decode each fixture into its raw struct,
+// re-marshal, and assert that every element path the struct MODELS reproduces the
+// fixture's values (whitespace-normalised, namespace-stripped, order-insensitive,
+// root-relative). See the file header for the normalization rules.
+func TestXMLGoldenRoundTrip(t *testing.T) {
+	for _, c := range roundTripCases() {
+		t.Run(c.name, func(t *testing.T) {
+			if c.skip != "" {
+				t.Skipf("round-trip not applicable: %s", c.skip)
+			}
+			assertRoundTrip(t, c.name, c.data, reflect.TypeOf(c.raw))
+		})
+	}
+}
+
+func assertRoundTrip(t *testing.T, name string, data []byte, rawType reflect.Type) {
+	t.Helper()
+
+	out := reflect.New(rawType).Interface()
+	if err := xml.Unmarshal(data, out); err != nil {
+		t.Fatalf("%s: unmarshal: %v", name, err)
+	}
+	remarshaled, err := xml.Marshal(out)
+	if err != nil {
+		t.Fatalf("%s: re-marshal: %v", name, err)
+	}
+
+	// Modeled element paths, made root-relative.
+	schemaEls, _ := schemaPaths(rawType)
+	schemaRel := stripRoots(schemaEls)
+
+	fixVals := stripRootVals(roundTripValues(data))
+	rtVals := stripRootVals(roundTripValues(remarshaled))
+
+	var diffs []string
+	for path, want := range fixVals {
+		if !schemaRel[path] {
+			continue // not modeled: governed by element coverage, not round-trip
+		}
+		got := rtVals[path]
+		if !equalMultisetVals(want, got) {
+			diffs = append(diffs, path+": fixture="+strings.Join(want, "|")+" remarshaled="+strings.Join(got, "|"))
+		}
+	}
+	sort.Strings(diffs)
+	if len(diffs) > 0 {
+		if len(diffs) > 20 {
+			diffs = append(diffs[:20], "...")
+		}
+		t.Errorf("%s: %d modeled element path(s) did not round-trip losslessly:\n  %s",
+			name, len(diffs), strings.Join(diffs, "\n  "))
+	}
+}
+
+// roundTripValues walks XML and returns, per rooted element path (local names),
+// the multiset of non-empty trimmed character values directly under that element.
+func roundTripValues(data []byte) map[string][]string {
+	out := map[string][]string{}
+	dec := xml.NewDecoder(strings.NewReader(string(data)))
+	var stack []string
+	var text strings.Builder
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			break
+		}
+		switch se := tok.(type) {
+		case xml.StartElement:
+			text.Reset()
+			stack = append(stack, "/"+localName(se.Name))
+		case xml.CharData:
+			text.Write(se)
+		case xml.EndElement:
+			path := strings.Join(stack, "")
+			if v := strings.TrimSpace(text.String()); v != "" {
+				out[path] = append(out[path], v)
+			}
+			text.Reset()
+			if len(stack) > 0 {
+				stack = stack[:len(stack)-1]
+			}
+		}
+	}
+	return out
+}
+
+// stripRoot drops the first "/segment" of a rooted path, leaving the path
+// relative to the root element (e.g. "/a/b/c" -> "/b/c", "/a" -> "").
+func stripRoot(p string) string {
+	if len(p) == 0 || p[0] != '/' {
+		return p
+	}
+	i := strings.IndexByte(p[1:], '/')
+	if i < 0 {
+		return ""
+	}
+	return p[1+i:]
+}
+
+func stripRoots(in map[string]bool) map[string]bool {
+	out := make(map[string]bool, len(in))
+	for p := range in {
+		out[stripRoot(p)] = true
+	}
+	return out
+}
+
+func stripRootVals(in map[string][]string) map[string][]string {
+	out := make(map[string][]string, len(in))
+	for p, v := range in {
+		rp := stripRoot(p)
+		out[rp] = append(out[rp], v...)
+	}
+	return out
+}
+
+func equalMultisetVals(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	ac := append([]string(nil), a...)
+	bc := append([]string(nil), b...)
+	sort.Strings(ac)
+	sort.Strings(bc)
+	for i := range ac {
+		if ac[i] != bc[i] {
+			return false
+		}
+	}
+	return true
 }
