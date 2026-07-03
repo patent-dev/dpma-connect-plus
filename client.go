@@ -26,7 +26,7 @@ import (
 )
 
 // Version is the library version. It surfaces through the default User-Agent.
-const Version = "0.3.3"
+const Version = "0.3.4"
 
 // DefaultUserAgent identifies this library in outbound requests.
 const DefaultUserAgent = "dpma-connect-plus-go/" + Version + " (patent.dev; +https://github.com/patent-dev/dpma-connect-plus)"
@@ -99,24 +99,29 @@ func NewClient(config *Config) (*Client, error) {
 		return nil, fmt.Errorf("baseURL must be a valid HTTP(S) URL")
 	}
 
-	httpClient := config.HTTPClient
-	if httpClient == nil {
+	userAgent := config.UserAgent
+	if userAgent == "" {
+		userAgent = DefaultUserAgent
+	}
+
+	var httpClient *http.Client
+	if config.HTTPClient != nil {
+		// Copy the caller's client so the User-Agent transport can be added
+		// without mutating the caller-owned client in place (which would also
+		// stack a new uaTransport on every NewClient call). The shallow copy
+		// preserves Timeout, Jar and CheckRedirect.
+		c := *config.HTTPClient
+		c.Transport = &uaTransport{base: transportOrDefault(config.HTTPClient), userAgent: userAgent}
+		httpClient = &c
+	} else {
 		timeout := config.Timeout
 		if timeout == 0 {
 			timeout = 20 * time.Minute
 		}
 		httpClient = &http.Client{
-			Timeout: timeout,
+			Timeout:   timeout,
+			Transport: &uaTransport{base: http.DefaultTransport, userAgent: userAgent},
 		}
-	}
-
-	userAgent := config.UserAgent
-	if userAgent == "" {
-		userAgent = DefaultUserAgent
-	}
-	httpClient.Transport = &uaTransport{
-		base:      transportOrDefault(httpClient),
-		userAgent: userAgent,
 	}
 
 	authToken := base64.StdEncoding.EncodeToString(

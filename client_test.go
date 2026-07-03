@@ -725,8 +725,33 @@ func TestUserAgent(t *testing.T) {
 	if !strings.Contains(DefaultUserAgent, "dpma-connect-plus-go") {
 		t.Errorf("DefaultUserAgent %q missing slug dpma-connect-plus-go", DefaultUserAgent)
 	}
-	if !strings.Contains(DefaultUserAgent, Version) || Version != "0.3.3" {
+	if !strings.Contains(DefaultUserAgent, Version) || Version != "0.3.4" {
 		t.Errorf("DefaultUserAgent %q missing version %q", DefaultUserAgent, Version)
+	}
+}
+
+// TestNewClientDoesNotMutateCallerHTTPClient verifies that supplying
+// Config.HTTPClient does not wrap or replace the caller's client transport in
+// place, and that repeated NewClient calls do not stack transports.
+func TestNewClientDoesNotMutateCallerHTTPClient(t *testing.T) {
+	caller := &http.Client{Timeout: 5 * time.Second}
+	origTransport := caller.Transport // nil by default
+
+	cfg := &Config{BaseURL: "https://example.com", Username: "u", Password: "p", HTTPClient: caller}
+	if _, err := NewClient(cfg); err != nil {
+		t.Fatalf("NewClient() error = %v", err)
+	}
+	if caller.Transport != origTransport {
+		t.Errorf("caller http.Client.Transport was mutated: got %T, want unchanged", caller.Transport)
+	}
+
+	// A second NewClient with the same caller client must still see the original
+	// (unwrapped) transport, i.e. no stacking.
+	if _, err := NewClient(cfg); err != nil {
+		t.Fatalf("second NewClient() error = %v", err)
+	}
+	if caller.Transport != origTransport {
+		t.Errorf("caller http.Client.Transport mutated after second NewClient")
 	}
 }
 
