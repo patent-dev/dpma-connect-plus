@@ -671,6 +671,65 @@ func (ht *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return http.DefaultTransport.RoundTrip(req)
 }
 
+func TestUserAgent(t *testing.T) {
+	tests := []struct {
+		name      string
+		configure func(*Config)
+		wantUA    string
+	}{
+		{
+			name:      "default user agent",
+			configure: func(*Config) {},
+			wantUA:    DefaultUserAgent,
+		},
+		{
+			name:      "custom user agent overrides default",
+			configure: func(c *Config) { c.UserAgent = "my-app/9.9" },
+			wantUA:    "my-app/9.9",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotUA string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotUA = r.Header.Get("User-Agent")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte("ok"))
+			}))
+			defer server.Close()
+
+			config := &Config{
+				BaseURL:  server.URL,
+				Username: "testuser",
+				Password: "testpass",
+				Timeout:  10 * time.Second,
+			}
+			tt.configure(config)
+
+			client, err := NewClient(config)
+			if err != nil {
+				t.Fatalf("NewClient() error = %v", err)
+			}
+
+			if _, err := client.GetVersion(context.Background(), ServicePatent); err != nil {
+				t.Fatalf("GetVersion() error = %v", err)
+			}
+
+			if gotUA != tt.wantUA {
+				t.Errorf("User-Agent = %q, want %q", gotUA, tt.wantUA)
+			}
+		})
+	}
+
+	if !strings.Contains(DefaultUserAgent, "dpma-connect-plus-go") {
+		t.Errorf("DefaultUserAgent %q missing slug dpma-connect-plus-go", DefaultUserAgent)
+	}
+	if !strings.Contains(DefaultUserAgent, Version) || Version != "0.3.3" {
+		t.Errorf("DefaultUserAgent %q missing version %q", DefaultUserAgent, Version)
+	}
+}
+
 // TestParseDPMAError_SimpleErrorFormat verifies that the <Error Message_DE.../>
 // format is detected by the unified error path (previously only the <Transaction>
 // format was caught on the raw []byte methods).

@@ -25,6 +25,12 @@ import (
 	"github.com/patent-dev/dpma-connect-plus/generated"
 )
 
+// Version is the library version. It surfaces through the default User-Agent.
+const Version = "0.3.3"
+
+// DefaultUserAgent identifies this library in outbound requests.
+const DefaultUserAgent = "dpma-connect-plus-go/" + Version + " (patent.dev; +https://github.com/patent-dev/dpma-connect-plus)"
+
 // Client is the main DPMA Connect Plus API client.
 // It is safe for concurrent use by multiple goroutines.
 type Client struct {
@@ -43,6 +49,7 @@ type Config struct {
 	Password   string
 	Timeout    time.Duration // HTTP client timeout (default: 20 minutes for bulk downloads)
 	HTTPClient *http.Client  // Optional custom HTTP client; if set, Timeout is ignored
+	UserAgent  string        // UserAgent overrides the outbound User-Agent header.
 }
 
 // DefaultConfig returns default configuration
@@ -51,6 +58,25 @@ func DefaultConfig() *Config {
 		BaseURL: "https://dpmaconnect.dpma.de/dpmaws/rest-services",
 		Timeout: 20 * time.Minute,
 	}
+}
+
+// uaTransport adds the User-Agent header to every outgoing request.
+type uaTransport struct {
+	base      http.RoundTripper
+	userAgent string
+}
+
+func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	r := req.Clone(req.Context())
+	r.Header.Set("User-Agent", t.userAgent)
+	return t.base.RoundTrip(r)
+}
+
+func transportOrDefault(c *http.Client) http.RoundTripper {
+	if c.Transport != nil {
+		return c.Transport
+	}
+	return http.DefaultTransport
 }
 
 // NewClient creates a new DPMA Connect Plus API client
@@ -82,6 +108,15 @@ func NewClient(config *Config) (*Client, error) {
 		httpClient = &http.Client{
 			Timeout: timeout,
 		}
+	}
+
+	userAgent := config.UserAgent
+	if userAgent == "" {
+		userAgent = DefaultUserAgent
+	}
+	httpClient.Transport = &uaTransport{
+		base:      transportOrDefault(httpClient),
+		userAgent: userAgent,
 	}
 
 	authToken := base64.StdEncoding.EncodeToString(
