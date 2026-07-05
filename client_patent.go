@@ -251,11 +251,24 @@ func (c *Client) SearchPatentsParsed(ctx context.Context, query string) (*Patent
 	return ParsePatentSearch(data)
 }
 
+// maxPatentResolutionDepth caps the mutual recursion between getPatentInfoParsed
+// and getPatentInfoByPublicationNumber. The only legitimate chain is one search
+// (publication number -> registered number) followed by one direct fetch; if a
+// second search still yields a non-registered number, the register data points
+// back at itself and resolution must stop.
+const maxPatentResolutionDepth = 2
+
 // GetPatentInfoParsed retrieves patent info and returns parsed bibliographic data.
 // Accepts either a bare registered number (e.g., "100273629") or a DE patent number
 // with country prefix and/or kind code (e.g., "DE10027362C2", "DE102019200907A1").
 // For non-registered numbers, it resolves via publication number search automatically.
+// A *ResolutionLoopError is returned when the register data keeps pointing at a
+// non-registered number instead of terminating.
 func (c *Client) GetPatentInfoParsed(ctx context.Context, patentNumber string) (*PatentInfo, error) {
+	return c.getPatentInfoParsed(ctx, patentNumber, 0)
+}
+
+func (c *Client) getPatentInfoParsed(ctx context.Context, patentNumber string, depth int) (*PatentInfo, error) {
 	patentNumber = strings.TrimSpace(patentNumber)
 	if isRegisteredNumber(patentNumber) {
 		data, err := c.GetPatentInfo(ctx, patentNumber)
@@ -264,13 +277,20 @@ func (c *Client) GetPatentInfoParsed(ctx context.Context, patentNumber string) (
 		}
 		return ParsePatentInfo(data)
 	}
+	if depth >= maxPatentResolutionDepth {
+		return nil, &ResolutionLoopError{Number: patentNumber}
+	}
 	// Not a bare registered number - resolve via publication number search
-	return c.GetPatentInfoByPublicationNumber(ctx, patentNumber)
+	return c.getPatentInfoByPublicationNumber(ctx, patentNumber, depth)
 }
 
 // GetPatentInfoByPublicationNumber resolves a DE publication number (e.g. "DE102019200907A1")
 // to a registered number via search and returns the parsed patent info.
 func (c *Client) GetPatentInfoByPublicationNumber(ctx context.Context, publicationNumber string) (*PatentInfo, error) {
+	return c.getPatentInfoByPublicationNumber(ctx, publicationNumber, 0)
+}
+
+func (c *Client) getPatentInfoByPublicationNumber(ctx context.Context, publicationNumber string, depth int) (*PatentInfo, error) {
 	query := fmt.Sprintf("PN=%s", publicationNumber)
 	searchResult, err := c.SearchPatentsParsed(ctx, query)
 	if err != nil {
@@ -283,7 +303,7 @@ func (c *Client) GetPatentInfoByPublicationNumber(ctx context.Context, publicati
 	if regNum == "" {
 		return nil, fmt.Errorf("patent %s has no leading-registered-number", publicationNumber)
 	}
-	return c.GetPatentInfoParsed(ctx, regNum)
+	return c.getPatentInfoParsed(ctx, regNum, depth+1)
 }
 
 // GetPatentRegisterExtractStream downloads patent register extract data and writes to dst

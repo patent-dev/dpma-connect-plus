@@ -249,7 +249,12 @@ func TestIsValidField(t *testing.T) {
 }
 
 func TestIsValidOperator(t *testing.T) {
-	valid := []string{"AND", "OR", "NOT", "UND", "ODER", "NICHT", "and", "or", "not", "und", "oder", "nicht"}
+	valid := []string{
+		"AND", "OR", "NOT", "UND", "ODER", "NICHT",
+		"and", "or", "not", "und", "oder", "nicht",
+		// Mixed case must be recognized too
+		"And", "oR", "Und", "nIcHt", "Oder",
+	}
 	for _, op := range valid {
 		if !IsValidOperator(op) {
 			t.Errorf("IsValidOperator(%q) = false, want true", op)
@@ -261,6 +266,83 @@ func TestIsValidOperator(t *testing.T) {
 		if IsValidOperator(op) {
 			t.Errorf("IsValidOperator(%q) = true, want false", op)
 		}
+	}
+}
+
+// Mixed-case operators must behave exactly like their canonical spellings: valid
+// inside a query, and rejected when dangling.
+func TestParseQuery_MixedCaseOperators(t *testing.T) {
+	valid := []string{
+		"TI=Motor And INH=Siemens",
+		"TI=Motor oder TI=Antrieb",
+		"TI=Elektrofahrzeug Nicht INH=Siemens",
+	}
+	for _, raw := range valid {
+		q, err := ParseQuery(raw, ServicePatent)
+		if err != nil {
+			t.Fatalf("ParseQuery(%q) error = %v", raw, err)
+		}
+		if !q.Valid {
+			t.Errorf("ParseQuery(%q) Valid = false, errors: %v", raw, q.Errors)
+		}
+	}
+
+	// Previously "And" was classified as a value, so a trailing mixed-case
+	// operator slipped through validation.
+	q, err := ParseQuery("TI=a And", ServicePatent)
+	if err != nil {
+		t.Fatalf("ParseQuery error = %v", err)
+	}
+	if q.Valid {
+		t.Errorf("ParseQuery(%q) Valid = true, want false (trailing operator)", "TI=a And")
+	}
+	found := false
+	for _, e := range q.Errors {
+		if contains(e, "cannot end with operator") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected 'cannot end with operator' error, got %v", q.Errors)
+	}
+}
+
+// An unterminated quoted value must fail validation instead of silently
+// re-classifying the quoted tail (e.g. `TI="AND` misread as a trailing operator).
+func TestParseQuery_UnterminatedQuote(t *testing.T) {
+	tests := []string{
+		`INH="Siemens`,
+		`TI="AND`,
+		`MARKE="e-mail for you AND KL=9`,
+	}
+	for _, raw := range tests {
+		t.Run(raw, func(t *testing.T) {
+			q, err := ParseQuery(raw, ServiceAny)
+			if err != nil {
+				t.Fatalf("ParseQuery(%q) error = %v", raw, err)
+			}
+			if q.Valid {
+				t.Fatalf("ParseQuery(%q) Valid = true, want false", raw)
+			}
+			found := false
+			for _, e := range q.Errors {
+				if contains(e, "unterminated quoted value") {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("ParseQuery(%q) errors = %v, want unterminated-quote error", raw, q.Errors)
+			}
+		})
+	}
+
+	// Properly terminated quotes stay valid.
+	q, err := ParseQuery(`INH="Siemens AG"`, ServicePatent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !q.Valid {
+		t.Errorf("terminated quote flagged invalid, errors: %v", q.Errors)
 	}
 }
 

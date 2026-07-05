@@ -10,7 +10,10 @@
 // Use [ParseQuery] to parse and validate queries, optionally scoped to a specific service.
 package query
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 // Service represents a DPMAregister service type for field validation.
 type Service string
@@ -201,8 +204,9 @@ var trademarkFields = map[string]Field{
 	"VST":  {Code: "VST", Name: "Verfahrensstand", Description: "procedure status", Input: InputText, Services: []Service{ServiceTrademark}},
 }
 
-// validOperators maps recognized Boolean operators.
-// DPMAregister supports both English and German operators.
+// validOperators maps the canonical (uppercase) Boolean operators.
+// DPMAregister supports both English and German operators; matching is
+// case-insensitive (see IsValidOperator).
 var validOperators = map[string]bool{
 	"AND":   true,
 	"OR":    true,
@@ -210,13 +214,6 @@ var validOperators = map[string]bool{
 	"UND":   true,
 	"ODER":  true,
 	"NICHT": true,
-	// Lowercase variants
-	"and":   true,
-	"or":    true,
-	"not":   true,
-	"und":   true,
-	"oder":  true,
-	"nicht": true,
 }
 
 // fieldsByService returns the field map for a given service.
@@ -257,8 +254,9 @@ func IsValidField(field string, svc Service) bool {
 }
 
 // IsValidOperator checks if a string is a recognized Boolean operator.
+// Matching is case-insensitive: "AND", "and", and "And" are all recognized.
 func IsValidOperator(op string) bool {
-	return validOperators[op]
+	return validOperators[strings.ToUpper(op)]
 }
 
 // GetField returns the field definition for a code and service.

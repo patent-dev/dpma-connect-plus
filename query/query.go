@@ -208,8 +208,14 @@ func tokenize(query string) []Token {
 		}
 	}
 
-	// Flush remaining token
-	flushCurrent(TokenUnknown)
+	// Flush remaining token. An unterminated quoted tail is still a value:
+	// classifying it would mislabel a tail like `TI="AND` as an operator.
+	// checkQuoteMatching reports the missing closing quote separately.
+	if inQuotes {
+		flushCurrent(TokenValue)
+	} else {
+		flushCurrent(TokenUnknown)
+	}
 
 	return tokens
 }
@@ -230,6 +236,7 @@ func classifyToken(value string) TokenType {
 func (q *Query) validate() {
 	q.checkBracketMatching()
 	q.checkBraceMatching()
+	q.checkQuoteMatching()
 	q.checkFieldNames()
 	q.checkOperatorPlacement()
 	q.checkQueryStructure()
@@ -294,6 +301,23 @@ func (q *Query) checkOperatorPlacement() {
 				))
 			}
 		}
+	}
+}
+
+// checkQuoteMatching verifies that every opening quote has a closing quote.
+// The tokenizer emits one TokenQuote per quote character, so an odd count means
+// a quoted value was never terminated.
+func (q *Query) checkQuoteMatching() {
+	count := 0
+	lastPos := 0
+	for _, token := range q.Tokens {
+		if token.Type == TokenQuote {
+			count++
+			lastPos = token.Pos
+		}
+	}
+	if count%2 != 0 {
+		q.Errors = append(q.Errors, fmt.Sprintf("unterminated quoted value: quote at position %d has no closing quote", lastPos))
 	}
 }
 

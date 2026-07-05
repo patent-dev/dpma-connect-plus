@@ -201,12 +201,14 @@ func streamResponse(resp *http.Response, err error, errMsg string, dst io.Writer
 	}
 	peek = peek[:n]
 
-	trimmed := bytes.TrimSpace(peek)
 	// Strip UTF-8 BOM if present
-	if bytes.HasPrefix(trimmed, []byte{0xEF, 0xBB, 0xBF}) {
-		trimmed = trimmed[3:]
-	}
-	if bytes.HasPrefix(trimmed, []byte("<?xml")) || bytes.HasPrefix(trimmed, []byte("<Tra")) {
+	trimmed := bytes.TrimPrefix(peek, []byte{0xEF, 0xBB, 0xBF})
+	trimmed = bytes.TrimSpace(trimmed)
+	// Any XML body signals an error candidate: DPMA serves its three error
+	// envelopes (<Transaction>, declaration-less <Error .../>, and the hit-list
+	// roots) with or without an XML declaration, while successful binary
+	// downloads (ZIP "PK", PDF "%PDF") never start with '<'.
+	if bytes.HasPrefix(trimmed, []byte("<")) {
 		rest, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to read response: %w", err)

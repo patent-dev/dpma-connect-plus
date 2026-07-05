@@ -377,6 +377,42 @@ func TestGetPatentInfoByPublicationNumber(t *testing.T) {
 	}
 }
 
+// Register data can point back at itself: a search hit whose
+// leading-registered-number is not a bare registered number would previously
+// recurse GetPatentInfoParsed <-> GetPatentInfoByPublicationNumber without
+// bound. The depth guard must stop after the legitimate one-search chain and
+// return a typed error.
+func TestGetPatentInfoParsed_ResolutionLoop(t *testing.T) {
+	loopSearchXML := `<?xml version='1.0' encoding='utf-8'?>` +
+		`<PatentHitList HitCount="1"><Counter><DocumentHits>1</DocumentHits><DatabaseHits>1</DatabaseHits></Counter>` +
+		`<PatentHitListRecord><leading-registered-number>DE10027362C2</leading-registered-number>` +
+		`<registered-number>DE10027362C2</registered-number><type>Patent</type></PatentHitListRecord></PatentHitList>`
+
+	searchCount := 0
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		requireAuth(t, r)
+		requirePath(t, r, "/DPMAregisterPatService/search/")
+		searchCount++
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(loopSearchXML))
+	}
+
+	server, client := setupMockServer(t, handler)
+	defer server.Close()
+
+	_, err := client.GetPatentInfoParsed(context.Background(), "DE10027362C2")
+	if err == nil {
+		t.Fatal("expected a resolution-loop error, got nil")
+	}
+	var loopErr *ResolutionLoopError
+	if !errors.As(err, &loopErr) {
+		t.Fatalf("expected *ResolutionLoopError, got %T: %v", err, err)
+	}
+	if searchCount > maxPatentResolutionDepth {
+		t.Errorf("made %d search requests, want at most %d", searchCount, maxPatentResolutionDepth)
+	}
+}
+
 func TestGetPatentInfoByPublicationNumber_NotFound(t *testing.T) {
 	handler := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
