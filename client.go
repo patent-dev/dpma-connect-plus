@@ -26,7 +26,7 @@ import (
 )
 
 // Version is the library version. It surfaces through the default User-Agent.
-const Version = "0.3.4"
+const Version = "0.3.6"
 
 // DefaultUserAgent identifies this library in outbound requests.
 const DefaultUserAgent = "dpma-connect-plus-go/" + Version + " (patent.dev; +https://github.com/patent-dev/dpma-connect-plus)"

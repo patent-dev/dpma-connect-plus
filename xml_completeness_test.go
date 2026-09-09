@@ -248,10 +248,14 @@ func TestXMLCompleteness(t *testing.T) {
 		raw  any
 	}{
 		{"patent_search", patentSearchXML, xmlPatentHitList{}},
+		{"patent_search_limited", patentSearchLimitedXML, xmlPatentHitList{}},
+		{"patent_search_empty", patentSearchEmptyXML, xmlPatentHitList{}},
 		{"patent_info", patentInfoXML, xmlDPMAPatentDocument{}},
 		{"trademark_search", trademarkSearchXML, xmlTrademarkHitList{}},
+		{"trademark_search_limited", trademarkSearchLimitedXML, xmlTrademarkHitList{}},
 		{"trademark_info", trademarkInfoXML, xmlTrademarkTransaction{}},
 		{"design_search", designSearchXML, xmlDesignHitList{}},
+		{"design_search_limited", designSearchLimitedXML, xmlDesignHitList{}},
 		{"design_info", designInfoXML, xmlDesignTransaction{}},
 	}
 	for _, c := range cases {
@@ -277,10 +281,14 @@ func roundTripCases() []struct {
 		skip string
 	}{
 		{name: "patent_search", data: patentSearchXML, raw: xmlPatentHitList{}},
+		{name: "patent_search_limited", data: patentSearchLimitedXML, raw: xmlPatentHitList{}},
+		{name: "patent_search_empty", data: patentSearchEmptyXML, raw: xmlPatentHitList{}},
 		{name: "patent_info", data: patentInfoXML, raw: xmlDPMAPatentDocument{}},
 		{name: "trademark_search", data: trademarkSearchXML, raw: xmlTrademarkHitList{}},
+		{name: "trademark_search_limited", data: trademarkSearchLimitedXML, raw: xmlTrademarkHitList{}},
 		{name: "trademark_info", data: trademarkInfoXML, raw: xmlTrademarkTransaction{}},
 		{name: "design_search", data: designSearchXML, raw: xmlDesignHitList{}},
+		{name: "design_search_limited", data: designSearchLimitedXML, raw: xmlDesignHitList{}},
 		{name: "design_info", data: designInfoXML, raw: xmlDesignTransaction{}},
 	}
 }

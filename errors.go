@@ -58,12 +58,25 @@ type simpleErrorResponse struct {
 // service returns <DesignHitList HitCount="0" Message_DE="..." Message_EN="..."/>.
 //
 // All three hit-list roots (PatentHitList, HitList, DesignHitList) are matched
-// by allowing the XMLName to be empty; only the presence of an error marker
-// (ErrorMessage element or Message_* attribute) flags an error.
+// by allowing the XMLName to be empty.
+//
+// Message_* attributes alone do NOT mean the request failed: when a broad query
+// exceeds the 10000-hit cap, the patent service returns a full hit list whose
+// root still carries maxHitsReached="true" plus Message_DE/Message_EN
+// ("Result list is limited - Not all results are returned"). Treating that as an
+// error would discard 10000 real results. So Message_* only flags an error when
+// the envelope carries no hits (HitCount absent or "0"); the ErrorMessage
+// element always does.
 type hitListErrorResponse struct {
 	ErrorMessage string `xml:"ErrorMessage"`
 	MessageDE    string `xml:"Message_DE,attr"`
 	MessageEN    string `xml:"Message_EN,attr"`
+	HitCount     string `xml:"HitCount,attr"`
+}
+
+// hasHits reports whether the hit-list envelope claims at least one hit.
+func (r *hitListErrorResponse) hasHits() bool {
+	return r.HitCount != "" && r.HitCount != "0"
 }
 
 // NotFoundError represents resource not found errors
@@ -233,14 +246,18 @@ func parseDPMAError(body []byte, statusCode int) error {
 		// and <DesignHitList HitCount="0" Message_DE=.../> (design). These arrive
 		// with HTTP 200 and an otherwise empty hit list, so without this check a bad
 		// query would silently parse as zero hits instead of surfacing an error.
+		//
+		// Message_* attributes on an envelope WITH hits are the 10000-hit-cap
+		// truncation notice, not an error (see hitListErrorResponse); those
+		// responses pass through and parse normally.
 		var hitErr hitListErrorResponse
 		if err := xml.Unmarshal(body, &hitErr); err == nil {
 			msg := hitErr.ErrorMessage
-			if msg == "" {
+			if msg == "" && !hitErr.hasHits() {
 				msg = hitErr.MessageEN
-			}
-			if msg == "" {
-				msg = hitErr.MessageDE
+				if msg == "" {
+					msg = hitErr.MessageDE
+				}
 			}
 			if msg != "" {
 				return &APIError{

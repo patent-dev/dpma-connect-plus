@@ -725,7 +725,7 @@ func TestUserAgent(t *testing.T) {
 	if !strings.Contains(DefaultUserAgent, "dpma-connect-plus-go") {
 		t.Errorf("DefaultUserAgent %q missing slug dpma-connect-plus-go", DefaultUserAgent)
 	}
-	if !strings.Contains(DefaultUserAgent, Version) || Version != "0.3.4" {
+	if !strings.Contains(DefaultUserAgent, Version) || Version != "0.3.6" {
 		t.Errorf("DefaultUserAgent %q missing version %q", DefaultUserAgent, Version)
 	}
 }

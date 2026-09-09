@@ -3,6 +3,8 @@ package dpmaconnect
 import (
 	"encoding/xml"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 // XMLParseError indicates a failure to parse XML response data.
@@ -36,10 +38,15 @@ type Party struct {
 // PatentSearchResult holds parsed patent search results.
 type PatentSearchResult struct {
 	TotalHits    int
-	DocumentHits int // <Counter><DocumentHits>
+	DocumentHits int // <Counter><DocumentHits>; 0 when the cap notice replaces the number (see MaxHitsReached)
 	DatabaseHits int // <Counter><DatabaseHits>
-	Hits         []PatentHit
-	RawXML       []byte // original XML response bytes
+	// MaxHitsReached is true when the query matched more than the 10000-hit cap
+	// and the returned list is truncated. DPMA then replaces the DocumentHits
+	// count with the notice text ("Result list is limited - Not all results are
+	// returned"), so DatabaseHits carries the register-wide total.
+	MaxHitsReached bool
+	Hits           []PatentHit
+	RawXML         []byte // original XML response bytes
 }
 
 // PatentHit represents a single patent search result entry.
@@ -154,8 +161,11 @@ type TrademarkSearchResult struct {
 	TotalHits    int
 	DocumentHits int
 	DatabaseHits int
-	Hits         []TrademarkHit
-	RawXML       []byte // original XML response bytes
+	// MaxHitsReached is true when the query matched more than the 10000-hit cap
+	// and the returned list is truncated (see PatentSearchResult.MaxHitsReached).
+	MaxHitsReached bool
+	Hits           []TrademarkHit
+	RawXML         []byte // original XML response bytes
 }
 
 // TrademarkHit represents a single trademark search result entry.
@@ -234,8 +244,11 @@ type DesignSearchResult struct {
 	TotalHits    int
 	DocumentHits int
 	DatabaseHits int
-	Hits         []DesignHit
-	RawXML       []byte // original XML response bytes
+	// MaxHitsReached is true when the query matched more than the 10000-hit cap
+	// and the returned list is truncated (see PatentSearchResult.MaxHitsReached).
+	MaxHitsReached bool
+	Hits           []DesignHit
+	RawXML         []byte // original XML response bytes
 }
 
 // DesignHit represents a single design search result entry.
@@ -352,15 +365,37 @@ type DesignRecord struct {
 
 // Patent search XML
 type xmlPatentHitList struct {
-	XMLName  xml.Name                 `xml:"PatentHitList"`
-	HitCount int                      `xml:"HitCount,attr"`
-	Counter  xmlHitCounter            `xml:"Counter"`
-	Records  []xmlPatentHitListRecord `xml:"PatentHitListRecord"`
+	XMLName        xml.Name                 `xml:"PatentHitList"`
+	HitCount       int                      `xml:"HitCount,attr"`
+	MaxHitsReached bool                     `xml:"maxHitsReached,attr"`
+	MessageDE      string                   `xml:"Message_DE,attr"`
+	MessageEN      string                   `xml:"Message_EN,attr"`
+	Counter        xmlHitCounter            `xml:"Counter"`
+	Records        []xmlPatentHitListRecord `xml:"PatentHitListRecord"`
 }
 
 type xmlHitCounter struct {
-	DocumentHits int `xml:"DocumentHits"`
-	DatabaseHits int `xml:"DatabaseHits"`
+	DocumentHits xmlHitCounterValue `xml:"DocumentHits"`
+	DatabaseHits xmlHitCounterValue `xml:"DatabaseHits"`
+}
+
+// xmlHitCounterValue holds one <Counter> child. Value is chardata rather than
+// int because on capped result lists DPMA replaces the DocumentHits number with
+// the truncation notice text; count() then yields 0. The attribute name
+// "maxHitsReched" is DPMA's own misspelling, verbatim from the API.
+type xmlHitCounterValue struct {
+	MaxHitsReached bool   `xml:"maxHitsReched,attr"`
+	Value          string `xml:",chardata"`
+}
+
+// count returns the numeric counter value, or 0 when the chardata is not a
+// number (the capped-list notice text).
+func (v xmlHitCounterValue) count() int {
+	n, err := strconv.Atoi(strings.TrimSpace(v.Value))
+	if err != nil {
+		return 0
+	}
+	return n
 }
 
 type xmlPatentHitListRecord struct {
@@ -542,10 +577,11 @@ type xmlPublishedDocuments struct {
 
 // Trademark search XML
 type xmlTrademarkHitList struct {
-	XMLName  xml.Name            `xml:"HitList"`
-	HitCount int                 `xml:"HitCount,attr"`
-	Counter  xmlHitCounter       `xml:"Counter"`
-	Entries  []xmlTrademarkEntry `xml:"Entries"`
+	XMLName        xml.Name            `xml:"HitList"`
+	HitCount       int                 `xml:"HitCount,attr"`
+	MaxHitsReached bool                `xml:"maxHitsReached,attr"`
+	Counter        xmlHitCounter       `xml:"Counter"`
+	Entries        []xmlTrademarkEntry `xml:"Entries"`
 }
 
 type xmlTrademarkEntry struct {
@@ -778,10 +814,13 @@ type xmlTransferCorrespondence struct {
 
 // Design search XML
 type xmlDesignHitList struct {
-	XMLName  xml.Name                 `xml:"DesignHitList"`
-	HitCount int                      `xml:"HitCount,attr"`
-	Counter  xmlHitCounter            `xml:"Counter"`
-	Records  []xmlDesignHitListRecord `xml:"DesignHitListRecord"`
+	XMLName        xml.Name                 `xml:"DesignHitList"`
+	HitCount       int                      `xml:"HitCount,attr"`
+	MaxHitsReached bool                     `xml:"maxHitsReached,attr"`
+	MessageDE      string                   `xml:"Message_DE,attr"`
+	MessageEN      string                   `xml:"Message_EN,attr"`
+	Counter        xmlHitCounter            `xml:"Counter"`
+	Records        []xmlDesignHitListRecord `xml:"DesignHitListRecord"`
 }
 
 type xmlDesignHitListRecord struct {
@@ -1091,11 +1130,12 @@ func ParsePatentSearch(data []byte) (*PatentSearchResult, error) {
 	}
 
 	result := &PatentSearchResult{
-		TotalHits:    raw.HitCount,
-		DocumentHits: raw.Counter.DocumentHits,
-		DatabaseHits: raw.Counter.DatabaseHits,
-		Hits:         make([]PatentHit, len(raw.Records)),
-		RawXML:       data,
+		TotalHits:      raw.HitCount,
+		DocumentHits:   raw.Counter.DocumentHits.count(),
+		DatabaseHits:   raw.Counter.DatabaseHits.count(),
+		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:           make([]PatentHit, len(raw.Records)),
+		RawXML:         data,
 	}
 
 	for i := range raw.Records {
@@ -1279,11 +1319,12 @@ func ParseTrademarkSearch(data []byte) (*TrademarkSearchResult, error) {
 	}
 
 	result := &TrademarkSearchResult{
-		TotalHits:    raw.HitCount,
-		DocumentHits: raw.Counter.DocumentHits,
-		DatabaseHits: raw.Counter.DatabaseHits,
-		Hits:         make([]TrademarkHit, len(raw.Entries)),
-		RawXML:       data,
+		TotalHits:      raw.HitCount,
+		DocumentHits:   raw.Counter.DocumentHits.count(),
+		DatabaseHits:   raw.Counter.DatabaseHits.count(),
+		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:           make([]TrademarkHit, len(raw.Entries)),
+		RawXML:         data,
 	}
 
 	for i := range raw.Entries {
@@ -1406,11 +1447,12 @@ func ParseDesignSearch(data []byte) (*DesignSearchResult, error) {
 	}
 
 	result := &DesignSearchResult{
-		TotalHits:    raw.HitCount,
-		DocumentHits: raw.Counter.DocumentHits,
-		DatabaseHits: raw.Counter.DatabaseHits,
-		Hits:         make([]DesignHit, len(raw.Records)),
-		RawXML:       data,
+		TotalHits:      raw.HitCount,
+		DocumentHits:   raw.Counter.DocumentHits.count(),
+		DatabaseHits:   raw.Counter.DatabaseHits.count(),
+		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:           make([]DesignHit, len(raw.Records)),
+		RawXML:         data,
 	}
 
 	for i := range raw.Records {

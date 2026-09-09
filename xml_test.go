@@ -30,6 +30,44 @@ var trademarkSearchErrorXML []byte
 //go:embed testdata/design_search_error.xml
 var designSearchErrorXML []byte
 
+// Capped result lists (10000-hit limit), recorded 2026-09-09 from broad live
+// queries (INH=Siemens patents, INH=GmbH trademarks) and trimmed to two records
+// plus the verbatim Counter tail. The patent root carries maxHitsReached plus
+// Message_DE/Message_EN; the trademark root carries only maxHitsReached, and in
+// both the DocumentHits counter holds the notice text instead of a number.
+//
+//go:embed testdata/patent_search_limited.xml
+var patentSearchLimitedXML []byte
+
+//go:embed testdata/trademark_search_limited.xml
+var trademarkSearchLimitedXML []byte
+
+//go:embed testdata/design_search_limited.xml
+var designSearchLimitedXML []byte
+
+// Further real captures recorded 2026-09-09: a patent bad query (query "("),
+// which arrives as <PatentHitList HitCount="0" Message_*=.../> rather than the
+// trademark service's <HitList><ErrorMessage> form; a genuine zero-hit patent
+// search; and the HTTP-200 authentication failure <Error> envelope (with DPMA's
+// own "Authentification" spelling).
+//
+//go:embed testdata/patent_search_error.xml
+var patentSearchErrorXML []byte
+
+//go:embed testdata/patent_search_empty.xml
+var patentSearchEmptyXML []byte
+
+//go:embed testdata/auth_error.xml
+var authErrorXML []byte
+
+// Real "Data not available" Transaction envelope from the patent bulk endpoint
+// (getOffenlegungsschriften_Volltext_XML, future publication week). The patent
+// service reports it inside a TradeMarkTransactionBody, which is why the error
+// parser inspects all three body variants.
+//
+//go:embed testdata/data_not_available.xml
+var dataNotAvailableXML []byte
+
 func TestParsePatentSearch(t *testing.T) {
 	result, err := ParsePatentSearch(patentSearchXML)
 	if err != nil {
@@ -103,9 +141,37 @@ func TestParsePatentSearch(t *testing.T) {
 	}
 }
 
+// A capped result list (broad query, 10000-hit limit) is a success carrying
+// real hits plus the truncation notice; it must parse, flag MaxHitsReached, and
+// yield the register-wide total from DatabaseHits (DocumentHits holds the
+// notice text instead of a number and reads as 0).
+func TestParsePatentSearch_Limited(t *testing.T) {
+	result, err := ParsePatentSearch(patentSearchLimitedXML)
+	if err != nil {
+		t.Fatalf("ParsePatentSearch() error = %v", err)
+	}
+	if !result.MaxHitsReached {
+		t.Error("MaxHitsReached = false, want true")
+	}
+	if result.TotalHits != 10000 {
+		t.Errorf("TotalHits = %d, want 10000", result.TotalHits)
+	}
+	if result.DocumentHits != 0 {
+		t.Errorf("DocumentHits = %d, want 0 (notice text in place of the count)", result.DocumentHits)
+	}
+	if result.DatabaseHits != 129659 {
+		t.Errorf("DatabaseHits = %d, want 129659", result.DatabaseHits)
+	}
+	if len(result.Hits) != 2 {
+		t.Fatalf("len(Hits) = %d, want 2", len(result.Hits))
+	}
+	if result.Hits[0].RegisteredNumber != "136 869" {
+		t.Errorf("Hits[0].RegisteredNumber = %q, want %q", result.Hits[0].RegisteredNumber, "136 869")
+	}
+}
+
 func TestParsePatentSearch_Empty(t *testing.T) {
-	xml := []byte(`<?xml version="1.0" encoding="UTF-8"?><PatentHitList HitCount="0"/>`)
-	result, err := ParsePatentSearch(xml)
+	result, err := ParsePatentSearch(patentSearchEmptyXML)
 	if err != nil {
 		t.Fatalf("error = %v", err)
 	}
@@ -114,6 +180,9 @@ func TestParsePatentSearch_Empty(t *testing.T) {
 	}
 	if len(result.Hits) != 0 {
 		t.Errorf("len(Hits) = %d, want 0", len(result.Hits))
+	}
+	if result.MaxHitsReached {
+		t.Error("MaxHitsReached = true, want false")
 	}
 }
 
@@ -329,6 +398,31 @@ func TestParseTrademarkSearch(t *testing.T) {
 	}
 }
 
+// Trademark counterpart of TestParsePatentSearch_Limited; the trademark root
+// carries only maxHitsReached (no Message_* attributes), and the notice text
+// still displaces the DocumentHits count.
+func TestParseTrademarkSearch_Limited(t *testing.T) {
+	result, err := ParseTrademarkSearch(trademarkSearchLimitedXML)
+	if err != nil {
+		t.Fatalf("ParseTrademarkSearch() error = %v", err)
+	}
+	if !result.MaxHitsReached {
+		t.Error("MaxHitsReached = false, want true")
+	}
+	if result.TotalHits != 10000 {
+		t.Errorf("TotalHits = %d, want 10000", result.TotalHits)
+	}
+	if result.DocumentHits != 0 {
+		t.Errorf("DocumentHits = %d, want 0 (notice text in place of the count)", result.DocumentHits)
+	}
+	if result.DatabaseHits != 838745 {
+		t.Errorf("DatabaseHits = %d, want 838745", result.DatabaseHits)
+	}
+	if len(result.Hits) != 2 {
+		t.Fatalf("len(Hits) = %d, want 2", len(result.Hits))
+	}
+}
+
 func TestParseTrademarkSearch_MalformedXML(t *testing.T) {
 	_, err := ParseTrademarkSearch([]byte("garbage"))
 	if err == nil {
@@ -530,6 +624,27 @@ func TestParseDesignSearch(t *testing.T) {
 	// Fourth hit carries the (often-dropped) StaffName field.
 	if result.Hits[3].StaffName == "" {
 		t.Error("Hits[3].StaffName is empty (field dropped)")
+	}
+}
+
+// Design counterpart of TestParsePatentSearch_Limited; the design root carries
+// maxHitsReached plus Message_* attributes like the patent service.
+func TestParseDesignSearch_Limited(t *testing.T) {
+	result, err := ParseDesignSearch(designSearchLimitedXML)
+	if err != nil {
+		t.Fatalf("ParseDesignSearch() error = %v", err)
+	}
+	if !result.MaxHitsReached {
+		t.Error("MaxHitsReached = false, want true")
+	}
+	if result.TotalHits != 10000 {
+		t.Errorf("TotalHits = %d, want 10000", result.TotalHits)
+	}
+	if result.DatabaseHits != 930348 {
+		t.Errorf("DatabaseHits = %d, want 930348", result.DatabaseHits)
+	}
+	if len(result.Hits) != 2 {
+		t.Fatalf("len(Hits) = %d, want 2", len(result.Hits))
 	}
 }
 

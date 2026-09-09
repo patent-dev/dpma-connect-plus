@@ -140,32 +140,55 @@ func TestParseDPMAError_FixtureEnvelopes(t *testing.T) {
 	tests := []struct {
 		name    string
 		body    []byte
-		wantErr bool
+		wantMsg string // non-empty: an *APIError whose Message contains this
 	}{
-		{"trademark search error", trademarkSearchErrorXML, true},
-		{"design search error", designSearchErrorXML, true},
-		{"patent search success", patentSearchXML, false},
-		{"trademark search success", trademarkSearchXML, false},
-		{"design search success", designSearchXML, false},
-		{"patent info success", patentInfoXML, false},
+		{"trademark search error", trademarkSearchErrorXML, "not admissible"},
+		{"design search error", designSearchErrorXML, "not admissible"},
+		// A patent bad query arrives as <PatentHitList HitCount="0"
+		// Message_*=.../>, not the trademark service's <HitList><ErrorMessage>.
+		{"patent search error", patentSearchErrorXML, "not admissible"},
+		// Authentication failures arrive with HTTP 200 as an <Error> envelope;
+		// "Authentification" is DPMA's own spelling.
+		{"auth failure", authErrorXML, "Authentification failed"},
+		{"patent search success", patentSearchXML, ""},
+		{"patent search zero hits", patentSearchEmptyXML, ""},
+		{"trademark search success", trademarkSearchXML, ""},
+		{"design search success", designSearchXML, ""},
+		{"patent info success", patentInfoXML, ""},
+		// Capped result lists carry the truncation notice (patent/design:
+		// Message_* attributes on the root) but hold real hits; they must not
+		// classify as errors.
+		{"patent search capped", patentSearchLimitedXML, ""},
+		{"trademark search capped", trademarkSearchLimitedXML, ""},
+		{"design search capped", designSearchLimitedXML, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := parseDPMAError(tt.body, http.StatusOK)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("parseDPMAError() error = %v, wantErr %v", err, tt.wantErr)
+			if (err != nil) != (tt.wantMsg != "") {
+				t.Fatalf("parseDPMAError() error = %v, wantErr %v", err, tt.wantMsg != "")
 			}
-			if tt.wantErr {
+			if tt.wantMsg != "" {
 				var apiErr *APIError
 				if !errors.As(err, &apiErr) {
 					t.Fatalf("got %T, want *APIError", err)
 				}
-				if !strings.Contains(apiErr.Message, "not admissible") {
-					t.Errorf("Message = %q, want the DPMA error text", apiErr.Message)
+				if !strings.Contains(apiErr.Message, tt.wantMsg) {
+					t.Errorf("Message = %q, want it to contain %q", apiErr.Message, tt.wantMsg)
 				}
 			}
 		})
 	}
+
+	// The real "Data not available" Transaction envelope maps to the dedicated
+	// type, not a generic *APIError.
+	t.Run("data not available", func(t *testing.T) {
+		err := parseDPMAError(dataNotAvailableXML, http.StatusOK)
+		var dnaErr *DataNotAvailableError
+		if !errors.As(err, &dnaErr) {
+			t.Fatalf("got %T (%v), want *DataNotAvailableError", err, err)
+		}
+	})
 }
 
 // A declaration-less <Error .../> root (patent info endpoint) must be detected.
