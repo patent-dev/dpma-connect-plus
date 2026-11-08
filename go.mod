@@ -2,7 +2,7 @@ module github.com/patent-dev/dpma-connect-plus
 
 go 1.26.1
 
-require github.com/oapi-codegen/runtime v1.7.0
+require github.com/oapi-codegen/runtime v1.8.0
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
