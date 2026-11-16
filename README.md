@@ -183,6 +183,15 @@ SearchPatents(ctx, query string) ([]byte, error)
 // Get patent info by registered number
 GetPatentInfo(ctx, registeredNumber string) ([]byte, error)
 
+// Parsed register record. GetPatentInfoParsed takes a registered number
+// ("100273629", "E247834666" for an EP file) or a publication number
+// ("DE10027362C2", "EP4780303A1"), resolving the latter by one search and one
+// fetch. GetPatentInfoByRegisteredNumber fetches a number exactly as a search
+// hit reported it (e.g. "CN2019089592" for a PCT application).
+GetPatentInfoParsed(ctx, patentNumber string) (*PatentInfo, error)
+GetPatentInfoByPublicationNumber(ctx, publicationNumber string) (*PatentInfo, error)
+GetPatentInfoByRegisteredNumber(ctx, registeredNumber string) (*PatentInfo, error)
+
 // Get searchable full text for a document
 GetSearchableFullText(ctx, documentID string) ([]byte, error)
 

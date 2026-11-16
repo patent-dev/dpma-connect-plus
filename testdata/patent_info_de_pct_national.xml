@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <publication-references>
+         <publication-reference sequence="1">
+            <document-id>
+               <country>DE</country>
+               <doc-number>112019001234</doc-number>
+               <kind>T5</kind>
+            </document-id>
+         </publication-reference>
+      </publication-references>
+      <application-reference>
+         <document-id>
+            <country>DE</country>
+            <doc-number>112019001234.7</doc-number>
+            <date>2019-03-07</date>
+         </document-id>
+      </application-reference>
+      <application-reference>
+         <document-id>
+            <country>WO</country>
+            <doc-number>PCT/JP2019/009075</doc-number>
+            <date>2019-03-07</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">STROMMESSVORRICHTUNG, ENERGIESPEICHERAPPARAT UND STROMMESSVERFAHREN</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>G01R0031327000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="2">
+            <text>G01R0031360000</text>
+            <ipc-version-indicator>2020.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="3">
+            <text>G01R0019000000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <pct-or-regional-publishing-data>
+         <document-id>
+            <country>WO</country>
+            <doc-number>2019172371</doc-number>
+         </document-id>
+      </pct-or-regional-publishing-data>
+      <pct-or-regional-filing-data>
+         <document-id>
+            <country>WO</country>
+            <date>2019-03-07</date>
+         </document-id>
+      </pct-or-regional-filing-data>
+      <parties>
+         <applicants>
+            <applicant sequence="1" app-type="applicant">
+               <addressbook>
+                  <text>GS Yuasa International Ltd., Kyoto, JP</text>
+                  <name>GS Yuasa International Ltd.</name>
+                  <address>
+                     <address-1>Kyoto</address-1>
+                     <country>JP</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants>
+         <inventors>
+            <inventor sequence="1">
+               <addressbook>
+                  <text>Imanaka, Yuki, Kyoto, JP</text>
+                  <name>Imanaka, Yuki</name>
+                  <address>
+                     <address-1>Kyoto</address-1>
+                     <country>JP</country>
+                  </address>
+               </addressbook>
+            </inventor>
+         </inventors>
+         <correspondence-address>
+            <addressbook>
+               <text>Grünecker Patent- und Rechtsanwälte PartG mbB, 80802 München, DE</text>
+               <name>Grünecker Patent- und Rechtsanwälte PartG mbB</name>
+               <address>
+                  <address-1>80802 München</address-1>
+                  <country>DE</country>
+               </address>
+            </addressbook>
+         </correspondence-address>
+         <agents>
+            <agent sequence="1">
+               <addressbook>
+                  <text>Grünecker Patent- und Rechtsanwälte PartG mbB, 80802 München, DE</text>
+                  <name>Grünecker Patent- und Rechtsanwälte PartG mbB</name>
+                  <address>
+                     <address-1>80802 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </agent>
+         </agents>
+      </parties>
+      <priority-claims>
+         <priority-claim sequence="1">
+            <country>JP</country>
+            <date>2018-03-09</date>
+            <doc-number>2018042795</doc-number>
+         </priority-claim>
+      </priority-claims>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>anhaengig-in-kraft</status>
+         <agent-type>vertreter</agent-type>
+         <national-filing-data>2019-03-07</national-filing-data>
+         <date-of-first-publication>2019-09-12</date-of-first-publication>
+         <due-date>2027-03-31</due-date>
+         <due-date-fee>pat-zer-jahr-9</due-date-fee>
+         <abstract>A current measurement device for a power storage element 41, said device comprising: a current interruption device 45 provided on the current path of the power storage element 41; a first current sensor 47 that measures the current of the power storage element 41, said sensor provided on said current path; a second current sensor 48 that is connected in parallel to the current interruption device 45; and a processing unit 51. The second current sensor 48 has a lower resolution than the first current sensor 47. The processing unit 51 executes: measurement processing in which, in response to prescribed selection conditions, the first current sensor 47 and the second current sensor 48 are selectively used to measure the current of the power storage element 41; and failure detection processing in which a failure of the current interruption device 45 is detected on the basis of the measurement value of the second current sensor 48 when the current interruption device 45 is switched to open or closed.</abstract>
+         <language-of-publication-wo>JP - Japanisch</language-of-publication-wo>
+         <date-pct-national-phase-entry-pat>2020-09-09</date-pct-national-phase-entry-pat>
+         <date-last-register-update>2026-04-03</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents/>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R012</procedural-status>
+         <date-of-procedural-status>2026-03-03</date-of-procedural-status>
+         <publication-info>
+            <issue-number>16</issue-number>
+            <year>2026</year>
+            <publication-date>2026-04-16</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+         <date-last-register-update>2026-04-03</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R000</procedural-status>
+         <date-of-procedural-status>2019-03-07</date-of-procedural-status>
+         <date-last-register-update>2020-11-19</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R004</procedural-status>
+         <date-of-procedural-status>2020-10-14</date-of-procedural-status>
+         <date-last-register-update>2020-11-19</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R226</procedural-status>
+         <date-of-procedural-status>2020-11-19</date-of-procedural-status>
+         <publication-info>
+            <issue-number>47</issue-number>
+            <year>2020</year>
+            <publication-date>2020-11-19</publication-date>
+            <publication-type>grossteile-publikation</publication-type>
+            <part>teil-6</part>
+         </publication-info>
+         <published-documents>
+            <document>DE112019001234T5</document>
+         </published-documents>
+         <date-last-register-update>2020-11-19</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verfahren-pct-anmeldung</type-of-procedure>
+         <procedural-status>R448</procedural-status>
+         <date-of-procedural-status>2019-09-12</date-of-procedural-status>
+         <date-last-register-update>2020-11-19</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R445</procedural-status>
+         <date-of-procedural-status>2020-10-14</date-of-procedural-status>
+         <date-last-register-update>2020-11-19</date-last-register-update>
+      </event-data>
+   </events>
+</dpma-patent-document>

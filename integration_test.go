@@ -265,6 +265,47 @@ func TestIntegrationGetPatentInfoByPublicationNumber(t *testing.T) {
 	t.Logf("GetPatentInfoByPublicationNumber: %s - %s", result.ApplicationRef.Number, result.Title)
 }
 
+// EP and PCT rights resolve through a non-numeric leading-registered-number
+// (E247834666, CN2019089592) that must be fetched as reported.
+func TestIntegrationGetPatentInfoByRegisteredNumber(t *testing.T) {
+	client := getTestClient(t)
+	tests := []struct {
+		registered, wantCountry, wantNumber string
+	}{
+		{"E247834666", "EP", "24783466.6"},
+		{"CN2019089592", "WO", "PCT/CN2019/089592"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.registered, func(t *testing.T) {
+			result, err := client.GetPatentInfoByRegisteredNumber(context.Background(), tt.registered)
+			if err != nil {
+				skipIfTransient(t, err)
+				t.Fatalf("GetPatentInfoByRegisteredNumber(%s) error = %v", tt.registered, err)
+			}
+			if result.ApplicationRef.Country != tt.wantCountry || result.ApplicationRef.Number != tt.wantNumber {
+				t.Errorf("ApplicationRef = %+v, want %s %s", result.ApplicationRef, tt.wantCountry, tt.wantNumber)
+			}
+		})
+	}
+}
+
+// A publication number of an EP right resolves through the register's
+// E-prefixed leading-registered-number.
+func TestIntegrationGetPatentInfoParsedEP(t *testing.T) {
+	client := getTestClient(t)
+	result, err := client.GetPatentInfoParsed(context.Background(), "EP4780303A1")
+	if err != nil {
+		skipIfTransient(t, err)
+		t.Fatalf("GetPatentInfoParsed(EP4780303A1) error = %v", err)
+	}
+	if result.ApplicationRef.Country != "EP" || result.ApplicationRef.Number != "24783466.6" {
+		t.Errorf("ApplicationRef = %+v, want EP 24783466.6", result.ApplicationRef)
+	}
+	if len(result.RegionalPublications) == 0 || result.RegionalPublications[0].Number != "4780303" {
+		t.Errorf("RegionalPublications = %+v, want EP 4780303 first", result.RegionalPublications)
+	}
+}
+
 func TestIntegrationGetPatentPublicationPDF(t *testing.T) {
 	client := getTestClient(t)
 	data, err := client.GetPatentPublicationPDF(context.Background(), itPatentPublicationID)

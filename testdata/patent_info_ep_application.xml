@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <application-reference>
+         <document-id>
+            <country>EP</country>
+            <doc-number>24783466.6</doc-number>
+            <date>2024-09-17</date>
+         </document-id>
+      </application-reference>
+      <application-reference>
+         <document-id>
+            <country>WO</country>
+            <doc-number>PCT/US2024/047095</doc-number>
+            <date>2024-09-17</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">SYSTEM UND VERFAHREN ZUR ANREGUNG UND DETEKTION VON FLUORESZENZINDIKATOREN</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>A61B0005000000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="2">
+            <text>A61B0017290000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="3">
+            <text>A61B0090000000</text>
+            <ipc-version-indicator>2016.01</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <pct-or-regional-publishing-data>
+         <document-id>
+            <country>EP</country>
+            <doc-number>4780303</doc-number>
+         </document-id>
+      </pct-or-regional-publishing-data>
+      <pct-or-regional-publishing-data>
+         <document-id>
+            <country>WO</country>
+            <doc-number>2025064423</doc-number>
+         </document-id>
+      </pct-or-regional-publishing-data>
+      <pct-or-regional-filing-data>
+         <document-id>
+            <country>EP</country>
+            <date>2024-09-17</date>
+         </document-id>
+      </pct-or-regional-filing-data>
+      <pct-or-regional-filing-data>
+         <document-id>
+            <country>WO</country>
+            <date>2024-09-17</date>
+         </document-id>
+      </pct-or-regional-filing-data>
+      <parties>
+         <inventors>
+            <inventor sequence="1">
+               <addressbook>
+                  <text>GUNN, Jonathan, Chicago, IL 60625, US</text>
+                  <name>GUNN, Jonathan, Chicago</name>
+                  <address>
+                     <address-1>IL 60625</address-1>
+                     <country>US</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="2">
+               <addressbook>
+                  <text>THROCKMORTON, Graham, A., Chicago, IL 60625, US</text>
+                  <name>THROCKMORTON, Graham, A., Chicago</name>
+                  <address>
+                     <address-1>IL 60625</address-1>
+                     <country>US</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="3">
+               <addressbook>
+                  <text>SHUKAIR, Shetha, Chicago, IL 60625, US</text>
+                  <name>SHUKAIR, Shetha, Chicago</name>
+                  <address>
+                     <address-1>IL 60625</address-1>
+                     <country>US</country>
+                  </address>
+               </addressbook>
+            </inventor>
+         </inventors>
+      </parties>
+      <priority-claims>
+         <priority-claim sequence="1">
+            <country>US</country>
+            <date>2023-09-21</date>
+            <doc-number>202363584460P</doc-number>
+         </priority-claim>
+      </priority-claims>
+      <designation-of-states>
+         <designation-pct>
+            <regional>
+               <region>
+                  <country>EP</country>
+               </region>
+               <country>AL</country>
+               <country>AT</country>
+               <country>BE</country>
+               <country>BG</country>
+               <country>CH</country>
+               <country>CY</country>
+               <country>CZ</country>
+               <country>DE</country>
+               <country>DK</country>
+               <country>EE</country>
+               <country>ES</country>
+               <country>FI</country>
+               <country>FR</country>
+               <country>GB</country>
+               <country>GR</country>
+               <country>HR</country>
+               <country>HU</country>
+               <country>IE</country>
+               <country>IS</country>
+               <country>IT</country>
+               <country>LI</country>
+               <country>LT</country>
+               <country>LU</country>
+               <country>LV</country>
+               <country>MC</country>
+               <country>ME</country>
+               <country>MK</country>
+               <country>MT</country>
+               <country>NL</country>
+               <country>NO</country>
+               <country>PL</country>
+               <country>PT</country>
+               <country>RO</country>
+               <country>RS</country>
+               <country>SE</country>
+               <country>SI</country>
+               <country>SK</country>
+               <country>SM</country>
+               <country>TR</country>
+            </regional>
+         </designation-pct>
+      </designation-of-states>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>anhaengig-in-kraft</status>
+         <date-of-first-publication>2025-03-27</date-of-first-publication>
+         <language-of-publication-ep>EN - Englisch</language-of-publication-ep>
+         <date-last-register-update>2026-07-29</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents/>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>verfahren-ep-anmeldung</type-of-procedure>
+         <procedural-status>R092</procedural-status>
+         <date-of-procedural-status>2026-07-29</date-of-procedural-status>
+         <date-last-register-update>2026-07-29</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R093</procedural-status>
+         <date-of-procedural-status>2026-09-10</date-of-procedural-status>
+         <publication-info>
+            <issue-number>37</issue-number>
+            <year>2026</year>
+            <publication-date>2026-09-10</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+         </publication-info>
+         <date-last-register-update>2026-07-29</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verfahren-pct-anmeldung</type-of-procedure>
+         <procedural-status>R423</procedural-status>
+         <date-of-procedural-status>2025-03-27</date-of-procedural-status>
+         <date-last-register-update>2026-07-29</date-last-register-update>
+      </event-data>
+   </events>
+</dpma-patent-document>

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -239,11 +240,21 @@ func TestIsRegisteredNumber(t *testing.T) {
 	}{
 		{"100273629", true},
 		{"123", true},
+		{"1120190012347", true}, // DE national phase of a PCT application
+		{"E247834666", true},    // EP 24783466.6 in the German register
+		{"e247834666", true},
+		{" E247834666 ", true},
 		{"", false},
+		{"E", false},
+		{"EP4780303", false}, // an EP publication number, resolved by search
+		{"E24783466.6", false},
 		{"DE123C", false},
 		{"DE10027362", false},
 		{"de123c", false},
 		{"10027362B4", false},
+		// A PCT registered number has the shape of a publication number, so it is
+		// only fetched when a search reports it, never classified from input.
+		{"CN2019089592", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
@@ -377,39 +388,141 @@ func TestGetPatentInfoByPublicationNumber(t *testing.T) {
 	}
 }
 
-// Register data can point back at itself: a search hit whose
-// leading-registered-number is not a bare registered number would previously
-// recurse GetPatentInfoParsed <-> GetPatentInfoByPublicationNumber without
-// bound. The depth guard must stop after the legitimate one-search chain and
-// return a typed error.
-func TestGetPatentInfoParsed_ResolutionLoop(t *testing.T) {
-	loopSearchXML := `<?xml version='1.0' encoding='utf-8'?>` +
+// infoRegisteredNumber returns the registered number a getRegisterInfo request
+// asks for, or "" for any other endpoint.
+func infoRegisteredNumber(r *http.Request) string {
+	const prefix = "/DPMAregisterPatService/getRegisterInfo/"
+	i := strings.Index(r.URL.Path, prefix)
+	if i < 0 {
+		return ""
+	}
+	return r.URL.Path[i+len(prefix):]
+}
+
+// A search hit's leading-registered-number is fetched exactly as reported, even
+// when it is not digits-only. The live register reports E247834666 for
+// PN=EP4780303A1 and CN2019089592 for PN=WO2020001234A1 (fixtures captured
+// 2026-11-16); before, the library re-classified those as publication numbers
+// and searched PN=E247834666, which DPMA rejects with "invalid input value".
+func TestGetPatentInfoParsed_NonNumericLeadingRegisteredNumber(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		search    []byte
+		info      []byte
+		wantFetch string
+		wantApp   PatentDocumentRef
+	}{
+		{
+			name: "EP application", input: "EP4780303A1",
+			search: patentSearchEPXML, info: patentInfoEPApplicationXML,
+			wantFetch: "E247834666",
+			wantApp:   PatentDocumentRef{Country: "EP", Number: "24783466.6", Date: "2024-09-17"},
+		},
+		{
+			name: "PCT application before the DE phase", input: "WO2020001234A1",
+			search: patentSearchPCTXML, info: patentInfoPCTXML,
+			wantFetch: "CN2019089592",
+			wantApp:   PatentDocumentRef{Country: "WO", Number: "PCT/CN2019/089592", Date: "2019-05-31"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var searches int
+			var fetched []string
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				requireAuth(t, r)
+				w.WriteHeader(http.StatusOK)
+				if reg := infoRegisteredNumber(r); reg != "" {
+					fetched = append(fetched, reg)
+					_, _ = w.Write(tt.info)
+					return
+				}
+				requirePath(t, r, "/DPMAregisterPatService/search/")
+				searches++
+				_, _ = w.Write(tt.search)
+			}
+			server, client := setupMockServer(t, handler)
+			defer server.Close()
+
+			got, err := client.GetPatentInfoParsed(context.Background(), tt.input)
+			if err != nil {
+				t.Fatalf("GetPatentInfoParsed(%q) error = %v", tt.input, err)
+			}
+			if searches != 1 || len(fetched) != 1 || fetched[0] != tt.wantFetch {
+				t.Fatalf("requests: %d search(es), fetched %v; want 1 search then a fetch of %s", searches, fetched, tt.wantFetch)
+			}
+			if got.ApplicationRef != tt.wantApp {
+				t.Errorf("ApplicationRef = %+v, want %+v", got.ApplicationRef, tt.wantApp)
+			}
+		})
+	}
+}
+
+// An E-prefixed registered number given directly is fetched without a search,
+// upper-cased because the register is case sensitive.
+func TestGetPatentInfoParsed_ERegisteredNumberDirect(t *testing.T) {
+	for _, input := range []string{"E247834666", "e247834666"} {
+		t.Run(input, func(t *testing.T) {
+			var fetched []string
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				requireAuth(t, r)
+				reg := infoRegisteredNumber(r)
+				if reg == "" {
+					t.Errorf("unexpected request %s: a registered number must not be searched", r.URL.Path)
+				}
+				fetched = append(fetched, reg)
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write(patentInfoEPApplicationXML)
+			}
+			server, client := setupMockServer(t, handler)
+			defer server.Close()
+
+			got, err := client.GetPatentInfoParsed(context.Background(), input)
+			if err != nil {
+				t.Fatalf("GetPatentInfoParsed(%q) error = %v", input, err)
+			}
+			if len(fetched) != 1 || fetched[0] != "E247834666" {
+				t.Errorf("fetched %v, want [E247834666]", fetched)
+			}
+			if got.Title != "SYSTEM UND VERFAHREN ZUR ANREGUNG UND DETEKTION VON FLUORESZENZINDIKATOREN" {
+				t.Errorf("Title = %q", got.Title)
+			}
+		})
+	}
+}
+
+// A search hit whose leading-registered-number the register then rejects ends
+// after one search and one fetch with the register's own error: resolution can
+// no longer recurse into a second search.
+func TestGetPatentInfoParsed_ResolutionIsOneSearchOneFetch(t *testing.T) {
+	searchXML := `<?xml version='1.0' encoding='utf-8'?>` +
 		`<PatentHitList HitCount="1"><Counter><DocumentHits>1</DocumentHits><DatabaseHits>1</DatabaseHits></Counter>` +
 		`<PatentHitListRecord><leading-registered-number>DE10027362C2</leading-registered-number>` +
 		`<registered-number>DE10027362C2</registered-number><type>Patent</type></PatentHitListRecord></PatentHitList>`
 
-	searchCount := 0
+	var searches, fetches int
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		requireAuth(t, r)
-		requirePath(t, r, "/DPMAregisterPatService/search/")
-		searchCount++
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(loopSearchXML))
+		if infoRegisteredNumber(r) != "" {
+			fetches++
+			_, _ = w.Write(patentInfoInvalidInputXML)
+			return
+		}
+		searches++
+		_, _ = w.Write([]byte(searchXML))
 	}
-
 	server, client := setupMockServer(t, handler)
 	defer server.Close()
 
 	_, err := client.GetPatentInfoParsed(context.Background(), "DE10027362C2")
-	if err == nil {
-		t.Fatal("expected a resolution-loop error, got nil")
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || !strings.Contains(err.Error(), "invalid input value") {
+		t.Fatalf("err = %T %v, want the register's invalid-input APIError", err, err)
 	}
-	var loopErr *ResolutionLoopError
-	if !errors.As(err, &loopErr) {
-		t.Fatalf("expected *ResolutionLoopError, got %T: %v", err, err)
-	}
-	if searchCount > maxPatentResolutionDepth {
-		t.Errorf("made %d search requests, want at most %d", searchCount, maxPatentResolutionDepth)
+	if searches != 1 || fetches != 1 {
+		t.Errorf("made %d search(es) and %d fetch(es), want exactly 1 and 1", searches, fetches)
 	}
 }
 

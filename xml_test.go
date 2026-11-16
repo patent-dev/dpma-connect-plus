@@ -3,6 +3,9 @@ package dpmaconnect
 import (
 	_ "embed"
 	"errors"
+	"fmt"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -56,6 +59,47 @@ var patentSearchErrorXML []byte
 
 //go:embed testdata/patent_search_empty.xml
 var patentSearchEmptyXML []byte
+
+// Real register records captured live 2026-11-16 for rights that did not
+// originate as a German national filing: a pending EP application (leading
+// registered number E247834666), a granted EP validated in DE (E169165537), a
+// DE national phase of a PCT application (1120190012347) and a PCT application
+// that has not entered the DE phase (CN2019089592). Each carries several
+// application-reference elements and pct-or-regional data, which the DE-only
+// fixture above does not.
+//
+//go:embed testdata/patent_info_ep_application.xml
+var patentInfoEPApplicationXML []byte
+
+//go:embed testdata/patent_info_ep_granted.xml
+var patentInfoEPGrantedXML []byte
+
+//go:embed testdata/patent_info_de_pct_national.xml
+var patentInfoDEPCTNationalXML []byte
+
+//go:embed testdata/patent_info_pct.xml
+var patentInfoPCTXML []byte
+
+// Live PN= searches (2026-11-16) whose single hit carries a non-numeric leading
+// registered number: PN=EP4780303A1 -> E247834666, PN=WO2020001234A1 ->
+// CN2019089592.
+//
+//go:embed testdata/patent_search_ep.xml
+var patentSearchEPXML []byte
+
+//go:embed testdata/patent_search_pct.xml
+var patentSearchPCTXML []byte
+
+// Real register rejections (2026-11-16): getRegisterInfo/DE10027362C2 (a
+// publication number sent as a registered number) and search PN=E247834666 (a
+// registered number sent as a publication number - the request the library made
+// before it fetched a reported leading-registered-number directly).
+//
+//go:embed testdata/patent_info_invalid_input.xml
+var patentInfoInvalidInputXML []byte
+
+//go:embed testdata/patent_search_invalid_input.xml
+var patentSearchInvalidInputXML []byte
 
 //go:embed testdata/auth_error.xml
 var authErrorXML []byte
@@ -1145,5 +1189,202 @@ func TestXMLParseError_Unwrap(t *testing.T) {
 	}
 	if xmlErr.Error() != "TestOp: failed to parse XML: underlying error" {
 		t.Errorf("Error() = %q", xmlErr.Error())
+	}
+}
+
+// Register records for rights that did not start as a German national filing
+// carry several application-reference elements. The register file's own
+// reference comes first; before ApplicationRefs existed, encoding/xml kept only
+// the LAST element, so a pending EP reported its WO number as its application.
+func TestParsePatentInfo_NonNationalRecords(t *testing.T) {
+	tests := []struct {
+		name           string
+		data           []byte
+		appRefs        []PatentDocumentRef
+		regionalPubs   []PatentDocumentRef
+		regionalFiling []PatentDocumentRef
+		regions        []string // region:number-of-states
+		grantPub       string
+		pctEntry       string
+		dueDate        string
+		dueDateFee     string
+		langEP, langWO string
+		eventUpdate0   string
+	}{
+		{
+			name: "pending EP application", data: patentInfoEPApplicationXML,
+			appRefs: []PatentDocumentRef{
+				{Country: "EP", Number: "24783466.6", Date: "2024-09-17"},
+				{Country: "WO", Number: "PCT/US2024/047095", Date: "2024-09-17"},
+			},
+			regionalPubs:   []PatentDocumentRef{{Country: "EP", Number: "4780303"}, {Country: "WO", Number: "2025064423"}},
+			regionalFiling: []PatentDocumentRef{{Country: "EP", Date: "2024-09-17"}, {Country: "WO", Date: "2024-09-17"}},
+			regions:        []string{"EP:39"},
+			langEP:         "EN - Englisch",
+			eventUpdate0:   "2026-07-29",
+		},
+		{
+			name: "granted EP validated in DE", data: patentInfoEPGrantedXML,
+			appRefs: []PatentDocumentRef{
+				{Country: "DE", Number: "602016064775.3", Date: "2016-09-23"},
+				{Country: "EP", Number: "16916553.7", Date: "2016-09-23"},
+				{Country: "WO", Number: "PCT/CN2016/099943", Date: "2016-09-23"},
+			},
+			regionalPubs:   []PatentDocumentRef{{Country: "EP", Number: "3500000"}, {Country: "WO", Number: "2018053814"}},
+			regionalFiling: []PatentDocumentRef{{Country: "EP", Date: "2016-09-23"}, {Country: "WO", Date: "2016-09-23"}},
+			regions:        []string{"EP:38"},
+			grantPub:       "2021-10-06",
+			dueDate:        "2027-09-30",
+			dueDateFee:     "pat-zer-jahr-12",
+			langEP:         "EN - Englisch",
+			eventUpdate0:   "2021-09-16",
+		},
+		{
+			name: "DE national phase of a PCT application", data: patentInfoDEPCTNationalXML,
+			appRefs: []PatentDocumentRef{
+				{Country: "DE", Number: "112019001234.7", Date: "2019-03-07"},
+				{Country: "WO", Number: "PCT/JP2019/009075", Date: "2019-03-07"},
+			},
+			regionalPubs:   []PatentDocumentRef{{Country: "WO", Number: "2019172371"}},
+			regionalFiling: []PatentDocumentRef{{Country: "WO", Date: "2019-03-07"}},
+			pctEntry:       "2020-09-09",
+			dueDate:        "2027-03-31",
+			dueDateFee:     "pat-zer-jahr-9",
+			langWO:         "JP - Japanisch",
+			eventUpdate0:   "2026-04-03",
+		},
+		{
+			name: "PCT application before the DE phase", data: patentInfoPCTXML,
+			appRefs:        []PatentDocumentRef{{Country: "WO", Number: "PCT/CN2019/089592", Date: "2019-05-31"}},
+			regionalPubs:   []PatentDocumentRef{{Country: "WO", Number: "2020001234"}},
+			regionalFiling: []PatentDocumentRef{{Country: "WO", Date: "2019-05-31"}},
+			langWO:         "SF - Sonstige Fremdsprache",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParsePatentInfo(tt.data)
+			if err != nil {
+				t.Fatalf("ParsePatentInfo() error = %v", err)
+			}
+			if !reflect.DeepEqual(got.ApplicationRefs, tt.appRefs) {
+				t.Errorf("ApplicationRefs = %+v, want %+v", got.ApplicationRefs, tt.appRefs)
+			}
+			if got.ApplicationRef != tt.appRefs[0] {
+				t.Errorf("ApplicationRef = %+v, want the first reference %+v", got.ApplicationRef, tt.appRefs[0])
+			}
+			if !reflect.DeepEqual(got.RegionalPublications, tt.regionalPubs) {
+				t.Errorf("RegionalPublications = %+v, want %+v", got.RegionalPublications, tt.regionalPubs)
+			}
+			if !reflect.DeepEqual(got.RegionalFilings, tt.regionalFiling) {
+				t.Errorf("RegionalFilings = %+v, want %+v", got.RegionalFilings, tt.regionalFiling)
+			}
+			var regions []string
+			for _, r := range got.DesignatedRegions {
+				regions = append(regions, fmt.Sprintf("%s:%d", r.Region, len(r.Countries)))
+			}
+			if !reflect.DeepEqual(regions, tt.regions) {
+				t.Errorf("DesignatedRegions = %v, want %v", regions, tt.regions)
+			}
+			for _, f := range []struct{ field, got, want string }{
+				{"GrantPubDate", got.GrantPubDate, tt.grantPub},
+				{"PCTNationalPhaseEntryDate", got.PCTNationalPhaseEntryDate, tt.pctEntry},
+				{"DueDate", got.DueDate, tt.dueDate},
+				{"DueDateFee", got.DueDateFee, tt.dueDateFee},
+				{"PublicationLanguageEP", got.PublicationLanguageEP, tt.langEP},
+				{"PublicationLanguageWO", got.PublicationLanguageWO, tt.langWO},
+			} {
+				if f.got != f.want {
+					t.Errorf("%s = %q, want %q", f.field, f.got, f.want)
+				}
+			}
+			if len(got.Events) == 0 || got.Events[0].DateLastRegisterUpdate != tt.eventUpdate0 {
+				t.Errorf("Events[0].DateLastRegisterUpdate = %q, want %q", firstEventUpdate(got.Events), tt.eventUpdate0)
+			}
+		})
+	}
+}
+
+func firstEventUpdate(events []PatentEvent) string {
+	if len(events) == 0 {
+		return "<no events>"
+	}
+	return events[0].DateLastRegisterUpdate
+}
+
+// The original DE national record keeps its single application reference in
+// both fields, so existing callers of ApplicationRef see no change.
+func TestParsePatentInfo_NationalApplicationRefUnchanged(t *testing.T) {
+	got, err := ParsePatentInfo(patentInfoXML)
+	if err != nil {
+		t.Fatalf("ParsePatentInfo() error = %v", err)
+	}
+	want := PatentDocumentRef{Country: "DE", Number: "10027360.2", Date: "2000-06-02"}
+	if got.ApplicationRef != want {
+		t.Errorf("ApplicationRef = %+v, want %+v", got.ApplicationRef, want)
+	}
+	if len(got.ApplicationRefs) != 1 || got.ApplicationRefs[0] != want {
+		t.Errorf("ApplicationRefs = %+v, want [%+v]", got.ApplicationRefs, want)
+	}
+	if got.RegionalPublications != nil || got.RegionalFilings != nil || got.DesignatedRegions != nil {
+		t.Errorf("national record has regional data: pubs=%+v filings=%+v regions=%+v",
+			got.RegionalPublications, got.RegionalFilings, got.DesignatedRegions)
+	}
+}
+
+// Search hits for non-national rights report a non-numeric
+// leading-registered-number.
+func TestParsePatentSearch_NonNumericLeadingRegisteredNumber(t *testing.T) {
+	tests := []struct {
+		name       string
+		data       []byte
+		lead, reg  string
+		legalState string
+	}{
+		{"EP application", patentSearchEPXML, "E247834666", "24 78 3466.6", "Pending/in force"},
+		{"PCT application", patentSearchPCTXML, "CN2019089592", "PCT/CN2019/089592", "Not pending/lapsed"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParsePatentSearch(tt.data)
+			if err != nil {
+				t.Fatalf("ParsePatentSearch() error = %v", err)
+			}
+			if len(got.Hits) != 1 {
+				t.Fatalf("len(Hits) = %d, want 1", len(got.Hits))
+			}
+			h := got.Hits[0]
+			if h.LeadingRegisteredNumber != tt.lead || h.RegisteredNumber != tt.reg || h.LegalStatus != tt.legalState {
+				t.Errorf("hit = lead %q reg %q status %q, want %q %q %q",
+					h.LeadingRegisteredNumber, h.RegisteredNumber, h.LegalStatus, tt.lead, tt.reg, tt.legalState)
+			}
+		})
+	}
+}
+
+// Both register rejections surface as an APIError carrying DPMA's message.
+func TestParseInvalidInputResponses(t *testing.T) {
+	tests := []struct {
+		name  string
+		parse func([]byte) error
+		data  []byte
+		want  string
+	}{
+		{"getRegisterInfo with a publication number", func(b []byte) error { _, err := ParsePatentInfo(b); return err },
+			patentInfoInvalidInputXML, "invalid input value ''"},
+		{"search with a registered number", func(b []byte) error { _, err := ParsePatentSearch(b); return err },
+			patentSearchInvalidInputXML, "invalid input value 'E247834666'"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.parse(tt.data)
+			var apiErr *APIError
+			if !errors.As(err, &apiErr) {
+				t.Fatalf("err = %T %v, want *APIError", err, err)
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("err = %q, want it to contain %q", err.Error(), tt.want)
+			}
+		})
 	}
 }

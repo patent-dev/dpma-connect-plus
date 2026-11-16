@@ -76,9 +76,24 @@ type PatentSearchIPC struct {
 
 // PatentInfo holds parsed patent register info (ST36 bibliographic data).
 type PatentInfo struct {
-	SchemaVersion          string // @schema-version
-	Publications           []PatentPublication
-	ApplicationRef         PatentDocumentRef
+	SchemaVersion string // @schema-version
+	Publications  []PatentPublication
+	// ApplicationRef is the register file's own application reference: the
+	// first application-reference element (DE for a national file or a
+	// validated EP, EP for a pending EP application, WO for a PCT application
+	// before the DE phase). ApplicationRefs carries every one of them in
+	// document order, e.g. DE, EP and WO for a validated EP that started as a PCT.
+	ApplicationRef  PatentDocumentRef
+	ApplicationRefs []PatentDocumentRef
+	// RegionalPublications and RegionalFilings carry the
+	// pct-or-regional-publishing-data and pct-or-regional-filing-data elements:
+	// the EP and WO publication numbers and filing dates of a right that did not
+	// start as a German national filing.
+	RegionalPublications []PatentDocumentRef
+	RegionalFilings      []PatentDocumentRef
+	// DesignatedRegions carries designation-of-states/designation-pct/regional:
+	// each region (e.g. EP) with the states designated under it.
+	DesignatedRegions      []PatentDesignatedRegion
 	Title                  string
 	TitleLang              string
 	IPCClasses             []string // classification symbols (back-compat convenience)
@@ -95,8 +110,20 @@ type PatentInfo struct {
 	FilingDate             string
 	FirstPubDate           string
 	DateLastRegisterUpdate string
-	Events                 []PatentEvent // legal-event / prosecution history
-	RawXML                 []byte        // original XML response bytes
+	// GrantPubDate is office-specific-bib-data/date-of-publication-of-grant.
+	GrantPubDate string
+	// PCTNationalPhaseEntryDate is date-pct-national-phase-entry-pat.
+	PCTNationalPhaseEntryDate string
+	// DueDate and DueDateFee are the next fee due date and the fee it refers to
+	// (e.g. "pat-zer-jahr-12"), verbatim.
+	DueDate    string
+	DueDateFee string
+	// PublicationLanguageEP and PublicationLanguageWO are
+	// language-of-publication-ep / -wo, verbatim (e.g. "EN - Englisch").
+	PublicationLanguageEP string
+	PublicationLanguageWO string
+	Events                []PatentEvent // legal-event / prosecution history
+	RawXML                []byte        // original XML response bytes
 }
 
 // PatentClassification represents a classification-ipcr entry with version.
@@ -122,6 +149,13 @@ type PatentDocumentRef struct {
 	Date    string
 }
 
+// PatentDesignatedRegion is one designation-pct/regional entry: the region
+// (e.g. EP) and the states designated under it.
+type PatentDesignatedRegion struct {
+	Region    string
+	Countries []string
+}
+
 // PatentPriorityClaim represents a priority-claim entry.
 type PatentPriorityClaim struct {
 	Sequence  string
@@ -139,6 +173,7 @@ type PatentEvent struct {
 	IPCMainClass           *PatentIPCClass
 	PreviousIPCMainClass   *PatentIPCClass
 	PublishedDocuments     []string
+	DateLastRegisterUpdate string
 }
 
 // PatentEventPublication represents the publication-info of an event.
@@ -437,9 +472,12 @@ type xmlDPMAPatentDocument struct {
 
 type xmlPatentBibData struct {
 	PublicationRefs     xmlPublicationRefs     `xml:"publication-references"`
-	ApplicationRef      xmlApplicationRef      `xml:"application-reference"`
+	ApplicationRefs     []xmlApplicationRef    `xml:"application-reference"`
 	InventionTitle      xmlInventionTitle      `xml:"invention-title"`
 	ClassificationsIPCR xmlClassificationsIPCR `xml:"classifications-ipcr"`
+	RegionalPublishing  []xmlApplicationRef    `xml:"pct-or-regional-publishing-data"`
+	RegionalFiling      []xmlApplicationRef    `xml:"pct-or-regional-filing-data"`
+	DesignationOfStates xmlDesignationOfStates `xml:"designation-of-states"`
 	Parties             xmlParties             `xml:"parties"`
 	PriorityClaims      xmlPriorityClaims      `xml:"priority-claims"`
 	OfficeSpecific      xmlOfficeSpecificBib   `xml:"office-specific-bib-data"`
@@ -459,6 +497,23 @@ type xmlPublicationRef struct {
 
 type xmlApplicationRef struct {
 	DocumentID xmlDocumentID `xml:"document-id"`
+}
+
+type xmlDesignationOfStates struct {
+	DesignationPCT xmlDesignationPCT `xml:"designation-pct"`
+}
+
+type xmlDesignationPCT struct {
+	Regional []xmlDesignationRegional `xml:"regional"`
+}
+
+type xmlDesignationRegional struct {
+	Region    xmlDesignationRegion `xml:"region"`
+	Countries []string             `xml:"country"`
+}
+
+type xmlDesignationRegion struct {
+	Country string `xml:"country"`
 }
 
 type xmlDocumentID struct {
@@ -542,6 +597,12 @@ type xmlOfficeSpecificBib struct {
 	FirstPublication       string `xml:"date-of-first-publication"`
 	Abstract               string `xml:"abstract"`
 	DateLastRegisterUpdate string `xml:"date-last-register-update"`
+	GrantPublication       string `xml:"date-of-publication-of-grant"`
+	PCTNationalPhaseEntry  string `xml:"date-pct-national-phase-entry-pat"`
+	DueDate                string `xml:"due-date"`
+	DueDateFee             string `xml:"due-date-fee"`
+	LanguageEP             string `xml:"language-of-publication-ep"`
+	LanguageWO             string `xml:"language-of-publication-wo"`
 }
 
 type xmlPatentEvents struct {
@@ -556,6 +617,7 @@ type xmlPatentEventData struct {
 	IPCMainClass           *xmlEventIPCClass     `xml:"ipc-main-class"`
 	PreviousIPCMainClass   *xmlEventIPCClass     `xml:"previous-ipc-main-class"`
 	PublishedDocuments     xmlPublishedDocuments `xml:"published-documents"`
+	DateLastRegisterUpdate string                `xml:"date-last-register-update"`
 }
 
 type xmlEventPublication struct {
@@ -1236,6 +1298,7 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 			ProceduralStatus:       e.ProceduralStatus,
 			DateOfProceduralStatus: e.DateOfProceduralStatus,
 			PublishedDocuments:     e.PublishedDocuments.Documents,
+			DateLastRegisterUpdate: e.DateLastRegisterUpdate,
 		}
 		if e.PublicationInfo != nil {
 			ev.PublicationInfo = &PatentEventPublication{
@@ -1255,34 +1318,70 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 		events = append(events, ev)
 	}
 
+	applicationRefs := documentRefs(bib.ApplicationRefs)
+	var applicationRef PatentDocumentRef
+	if len(applicationRefs) > 0 {
+		applicationRef = applicationRefs[0]
+	}
+
+	var regions []PatentDesignatedRegion
+	for _, r := range bib.DesignationOfStates.DesignationPCT.Regional {
+		regions = append(regions, PatentDesignatedRegion{Region: r.Region.Country, Countries: r.Countries})
+	}
+
 	info := &PatentInfo{
-		SchemaVersion: raw.SchemaVersion,
-		Publications:  publications,
-		ApplicationRef: PatentDocumentRef{
-			Country: bib.ApplicationRef.DocumentID.Country,
-			Number:  bib.ApplicationRef.DocumentID.DocNumber,
-			Date:    bib.ApplicationRef.DocumentID.Date,
-		},
-		Title:                  bib.InventionTitle.Value,
-		TitleLang:              bib.InventionTitle.Lang,
-		IPCClasses:             ipcClasses,
-		Classifications:        classifications,
-		Applicants:             applicants,
-		Inventors:              inventors,
-		Agents:                 agents,
-		CorrespondenceParty:    partyFromAddressbook(bib.Parties.CorrespondenceAddress.Addressbook),
-		PriorityClaims:         priorities,
-		IPRightType:            bib.OfficeSpecific.TypeOfIPRight,
-		Status:                 bib.OfficeSpecific.Status,
-		AgentType:              bib.OfficeSpecific.AgentType,
-		Abstract:               bib.OfficeSpecific.Abstract,
-		FilingDate:             bib.OfficeSpecific.NationalFiling,
-		FirstPubDate:           bib.OfficeSpecific.FirstPublication,
-		DateLastRegisterUpdate: bib.OfficeSpecific.DateLastRegisterUpdate,
-		Events:                 events,
-		RawXML:                 data,
+		SchemaVersion:             raw.SchemaVersion,
+		Publications:              publications,
+		ApplicationRef:            applicationRef,
+		ApplicationRefs:           applicationRefs,
+		RegionalPublications:      documentRefs(bib.RegionalPublishing),
+		RegionalFilings:           documentRefs(bib.RegionalFiling),
+		DesignatedRegions:         regions,
+		Title:                     bib.InventionTitle.Value,
+		TitleLang:                 bib.InventionTitle.Lang,
+		IPCClasses:                ipcClasses,
+		Classifications:           classifications,
+		Applicants:                applicants,
+		Inventors:                 inventors,
+		Agents:                    agents,
+		CorrespondenceParty:       partyFromAddressbook(bib.Parties.CorrespondenceAddress.Addressbook),
+		PriorityClaims:            priorities,
+		IPRightType:               bib.OfficeSpecific.TypeOfIPRight,
+		Status:                    bib.OfficeSpecific.Status,
+		AgentType:                 bib.OfficeSpecific.AgentType,
+		Abstract:                  bib.OfficeSpecific.Abstract,
+		FilingDate:                bib.OfficeSpecific.NationalFiling,
+		FirstPubDate:              bib.OfficeSpecific.FirstPublication,
+		DateLastRegisterUpdate:    bib.OfficeSpecific.DateLastRegisterUpdate,
+		GrantPubDate:              bib.OfficeSpecific.GrantPublication,
+		PCTNationalPhaseEntryDate: bib.OfficeSpecific.PCTNationalPhaseEntry,
+		DueDate:                   bib.OfficeSpecific.DueDate,
+		DueDateFee:                bib.OfficeSpecific.DueDateFee,
+		PublicationLanguageEP:     bib.OfficeSpecific.LanguageEP,
+		PublicationLanguageWO:     bib.OfficeSpecific.LanguageWO,
+		Events:                    events,
+		RawXML:                    data,
 	}
 	return info, nil
+}
+
+// documentRefs converts document-id wrappers (application-reference,
+// pct-or-regional-publishing-data, pct-or-regional-filing-data) in document
+// order. Each element is kept even when some of its fields are absent: a
+// regional filing entry carries only country and date.
+func documentRefs(raw []xmlApplicationRef) []PatentDocumentRef {
+	if len(raw) == 0 {
+		return nil
+	}
+	refs := make([]PatentDocumentRef, 0, len(raw))
+	for _, r := range raw {
+		refs = append(refs, PatentDocumentRef{
+			Country: r.DocumentID.Country,
+			Number:  r.DocumentID.DocNumber,
+			Date:    r.DocumentID.Date,
+		})
+	}
+	return refs
 }
 
 func partyFromAddressbook(ab xmlAddressbook) Party {

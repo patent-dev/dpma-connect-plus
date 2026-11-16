@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <application-reference>
+         <document-id>
+            <country>WO</country>
+            <doc-number>PCT/CN2019/089592</doc-number>
+            <date>2019-05-31</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">FOLDER ICON DISPLAY METHOD, SYSTEM, READABLE STORAGE MEDIUM AND TERMINAL</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>G06F0003048100</text>
+            <ipc-version-indicator>2013.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="2">
+            <text>G06F0003048700</text>
+            <ipc-version-indicator>2013.01</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <pct-or-regional-publishing-data>
+         <document-id>
+            <country>WO</country>
+            <doc-number>2020001234</doc-number>
+         </document-id>
+      </pct-or-regional-publishing-data>
+      <pct-or-regional-filing-data>
+         <document-id>
+            <country>WO</country>
+            <date>2019-05-31</date>
+         </document-id>
+      </pct-or-regional-filing-data>
+      <parties/>
+      <priority-claims>
+         <priority-claim sequence="1">
+            <country>CN</country>
+            <date>2018-06-27</date>
+            <doc-number>201810678812.X</doc-number>
+         </priority-claim>
+      </priority-claims>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>nicht-anhaengig-erloschen</status>
+         <date-of-first-publication>2020-01-02</date-of-first-publication>
+         <abstract>Provided are a folder icon display method, a system, a readable storage medium and a terminal, wherein the method comprises: when detecting a trigger event that a first icon and a second icon are used to build a folder, creating a folder, and moving the first icon and the second icon into the folder; according to a shared attribute of the first icon and the second icon, obtaining a pre-stored icon corresponding to the shared attribute; and utilizing the pre-stored icon as an icon of the folder and displaying it in an application interface of the terminal. The folder icon display method of the present invention enables the icon users prefer to be used as displayed icons of folders, and the folders which are classified into different type of application will display different setting icons correspondingly, and no longer all the same, with a high personality. Meanwhile, the icon of folder can be changed into a specific application icon, so that there is no great difference between the icon of folder and other application icons, and the aesthetics is improved.</abstract>
+         <language-of-publication-wo>SF - Sonstige Fremdsprache</language-of-publication-wo>
+         <date-last-register-update>2021-01-27</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents/>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>rechercheverfahren</type-of-procedure>
+         <procedural-status>R021</procedural-status>
+         <date-of-procedural-status>2019-05-31</date-of-procedural-status>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R000</procedural-status>
+         <date-of-procedural-status>2019-05-31</date-of-procedural-status>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verfahren-pct-anmeldung</type-of-procedure>
+         <procedural-status>R115</procedural-status>
+         <date-of-procedural-status>2020-12-29</date-of-procedural-status>
+         <date-last-register-update>2021-01-27</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verfahren-pct-anmeldung</type-of-procedure>
+         <procedural-status>R448</procedural-status>
+         <date-of-procedural-status>2020-01-02</date-of-procedural-status>
+      </event-data>
+   </events>
+</dpma-patent-document>

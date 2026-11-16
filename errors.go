@@ -143,9 +143,12 @@ func (e *RateLimitError) Error() string {
 	return "rate limited: " + e.Message
 }
 
-// ResolutionLoopError is returned when resolving a patent number keeps producing
-// another non-registered number instead of terminating - i.e. the register data
-// points back at itself.
+// ResolutionLoopError was returned when resolving a patent number kept producing
+// another non-registered number instead of terminating.
+//
+// Deprecated: resolution is now always one search followed by one direct fetch
+// of the reported registered number, so it cannot loop and this error is no
+// longer returned. The type is kept so existing errors.As checks still compile.
 type ResolutionLoopError struct {
 	Number string
 }

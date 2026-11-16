@@ -13,13 +13,27 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// isRegisteredNumber returns true if the input looks like a bare DPMA registered number
-// (digits only, no DE prefix, no kind code). The DPMA getRegisterInfo API requires
-// the full registered number including check digit (e.g., "100273629").
+// isRegisteredNumber reports whether the input is a DPMA registered number that
+// getRegisterInfo accepts as typed, so it can be fetched without a search:
+//   - digits only, including the check digit, for German files ("100273629",
+//     "1120190012347" for the DE national phase of a PCT application);
+//   - "E" followed by digits for a European application or patent in the
+//     German register ("E247834666" is EP 24783466.6).
+//
+// The register also uses country-prefixed numbers such as "CN2019089592" for a
+// PCT application, but those have the same shape as a publication number
+// ("DE10027362"), so they are only ever taken from a search hit and fetched via
+// GetPatentInfoByRegisteredNumber, never classified from user input.
 func isRegisteredNumber(s string) bool {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return false
+	}
+	if s[0] == 'E' || s[0] == 'e' {
+		s = s[1:]
+		if s == "" {
+			return false
+		}
 	}
 	for _, c := range s {
 		if c < '0' || c > '9' {
@@ -251,46 +265,38 @@ func (c *Client) SearchPatentsParsed(ctx context.Context, query string) (*Patent
 	return ParsePatentSearch(data)
 }
 
-// maxPatentResolutionDepth caps the mutual recursion between getPatentInfoParsed
-// and getPatentInfoByPublicationNumber. The only legitimate chain is one search
-// (publication number -> registered number) followed by one direct fetch; if a
-// second search still yields a non-registered number, the register data points
-// back at itself and resolution must stop.
-const maxPatentResolutionDepth = 2
-
 // GetPatentInfoParsed retrieves patent info and returns parsed bibliographic data.
-// Accepts either a bare registered number (e.g., "100273629") or a DE patent number
-// with country prefix and/or kind code (e.g., "DE10027362C2", "DE102019200907A1").
-// For non-registered numbers, it resolves via publication number search automatically.
-// A *ResolutionLoopError is returned when the register data keeps pointing at a
-// non-registered number instead of terminating.
+// Accepts a registered number ("100273629", "E247834666" for an EP file) or a
+// publication number with country prefix and/or kind code ("DE10027362C2",
+// "DE102019200907A1", "EP4780303A1"). Anything that is not a registered number
+// is resolved via a publication number search automatically.
 func (c *Client) GetPatentInfoParsed(ctx context.Context, patentNumber string) (*PatentInfo, error) {
-	return c.getPatentInfoParsed(ctx, patentNumber, 0)
-}
-
-func (c *Client) getPatentInfoParsed(ctx context.Context, patentNumber string, depth int) (*PatentInfo, error) {
 	patentNumber = strings.TrimSpace(patentNumber)
 	if isRegisteredNumber(patentNumber) {
-		data, err := c.GetPatentInfo(ctx, patentNumber)
-		if err != nil {
-			return nil, err
-		}
-		return ParsePatentInfo(data)
+		return c.GetPatentInfoByRegisteredNumber(ctx, strings.ToUpper(patentNumber))
 	}
-	if depth >= maxPatentResolutionDepth {
-		return nil, &ResolutionLoopError{Number: patentNumber}
-	}
-	// Not a bare registered number - resolve via publication number search
-	return c.getPatentInfoByPublicationNumber(ctx, patentNumber, depth)
+	return c.GetPatentInfoByPublicationNumber(ctx, patentNumber)
 }
 
-// GetPatentInfoByPublicationNumber resolves a DE publication number (e.g. "DE102019200907A1")
-// to a registered number via search and returns the parsed patent info.
+// GetPatentInfoByRegisteredNumber fetches and parses the register record for a
+// registered number exactly as given. Use it for a number the register itself
+// reported (a search hit's leading-registered-number): those come in forms such
+// as "CN2019089592" that cannot be told apart from a publication number by
+// shape, so they must not go through GetPatentInfoParsed's classification.
+func (c *Client) GetPatentInfoByRegisteredNumber(ctx context.Context, registeredNumber string) (*PatentInfo, error) {
+	data, err := c.GetPatentInfo(ctx, registeredNumber)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatentInfo(data)
+}
+
+// GetPatentInfoByPublicationNumber resolves a publication number (e.g.
+// "DE102019200907A1", "EP4780303A1") to a registered number via search and
+// returns the parsed patent info. The search hit's leading-registered-number is
+// fetched as reported (see GetPatentInfoByRegisteredNumber), so resolution is
+// always exactly one search followed by one fetch.
 func (c *Client) GetPatentInfoByPublicationNumber(ctx context.Context, publicationNumber string) (*PatentInfo, error) {
-	return c.getPatentInfoByPublicationNumber(ctx, publicationNumber, 0)
-}
-
-func (c *Client) getPatentInfoByPublicationNumber(ctx context.Context, publicationNumber string, depth int) (*PatentInfo, error) {
 	query := fmt.Sprintf("PN=%s", publicationNumber)
 	searchResult, err := c.SearchPatentsParsed(ctx, query)
 	if err != nil {
@@ -303,7 +309,7 @@ func (c *Client) getPatentInfoByPublicationNumber(ctx context.Context, publicati
 	if regNum == "" {
 		return nil, fmt.Errorf("patent %s has no leading-registered-number", publicationNumber)
 	}
-	return c.getPatentInfoParsed(ctx, regNum, depth+1)
+	return c.GetPatentInfoByRegisteredNumber(ctx, regNum)
 }
 
 // GetPatentRegisterExtractStream downloads patent register extract data and writes to dst
