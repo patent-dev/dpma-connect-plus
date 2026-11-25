@@ -33,6 +33,24 @@ type Party struct {
 	Country  string
 	Sequence string // @sequence attribute, when present
 	AppType  string // applicant @app-type attribute, when present
+	// County, State, CountryCode and PostOfficeBox are the ST66/ST86 address
+	// elements AddressCounty, AddressState, FormattedAddressCountryCode and
+	// AddressPostOfficeBox, verbatim. Country above is a convenience pick of the
+	// first non-empty of County, State and CountryCode (the register writes the
+	// country code into any of them); these fields carry each element as sent.
+	County        string
+	State         string
+	CountryCode   string
+	PostOfficeBox string
+}
+
+// HitCounter is one <Counter> child of a search response, verbatim: Text is the
+// element text (a number, or on capped lists the truncation notice the register
+// writes in its place) and MaxHitsReached its maxHitsReched attribute (the
+// register's own spelling).
+type HitCounter struct {
+	Text           string
+	MaxHitsReached bool
 }
 
 // PatentSearchResult holds parsed patent search results.
@@ -47,6 +65,16 @@ type PatentSearchResult struct {
 	MaxHitsReached bool
 	Hits           []PatentHit
 	RawXML         []byte // original XML response bytes
+	// MessageDE and MessageEN are the Message_DE / Message_EN attributes of the
+	// hit list (e.g. the truncation notice of a capped list), verbatim.
+	MessageDE string
+	MessageEN string
+	// ListMaxHitsReached is the hit list's own maxHitsReached attribute;
+	// DocumentHitsCounter and DatabaseHitsCounter are the two <Counter> children
+	// as sent. MaxHitsReached above is the summary of these flags.
+	ListMaxHitsReached  bool
+	DocumentHitsCounter HitCounter
+	DatabaseHitsCounter HitCounter
 }
 
 // PatentHit represents a single patent search result entry.
@@ -66,6 +94,14 @@ type PatentHit struct {
 	ApplicationDate         string
 	PublicationDate         string
 	RegistrationDate        string
+	// NumberSystem, Country and ReceivingOffice classify the record by its
+	// LeadingRegisteredNumber (see ClassifyRegisteredNumber): the register also
+	// lists GDR patents, European files and PCT applications, so a hit is not
+	// necessarily a German file. They are derived from the number's form, not
+	// sent as separate elements; all three are empty for an unrecognised form.
+	NumberSystem    PatentNumberSystem
+	Country         string
+	ReceivingOffice string
 }
 
 // PatentSearchIPC is a classification symbol with its edition (patent search).
@@ -124,6 +160,48 @@ type PatentInfo struct {
 	PublicationLanguageWO string
 	Events                []PatentEvent // legal-event / prosecution history
 	RawXML                []byte        // original XML response bytes
+	// Citations carries references-cited/citation: the patcit entries, then
+	// the nplcit entries, each with the register's own Sequence.
+	// ReferencesCitedHash is the references-cited @hash attribute.
+	Citations           []PatentCitation
+	ReferencesCitedHash string
+	// RelatedDocuments carries related-documents: each utility-model-basis,
+	// division and addition relation with its parent and child files.
+	RelatedDocuments []PatentRelation
+}
+
+// PatentCitation is one references-cited entry. A patent citation (patcit)
+// carries the cited document-id; the register writes the whole cited
+// publication into DocNumber (e.g. "DE000010151502A1") and leaves Country, Kind
+// and Date absent. A non-patent citation (nplcit) carries Text and has
+// NonPatent set. RelevanceIndicators are the relevance-ind elements (X, Y, A...).
+type PatentCitation struct {
+	Sequence            string
+	NonPatent           bool
+	Country             string
+	DocNumber           string
+	Kind                string
+	Date                string
+	Text                string
+	RelevanceIndicators []string
+}
+
+// Relation types of PatentRelation.Type: the related-documents child element
+// names.
+const (
+	RelationUtilityModelBasis = "utility-model-basis"
+	RelationDivision          = "division"
+	RelationAddition          = "addition"
+)
+
+// PatentRelation is one related-documents relation: Type is the element name
+// (RelationUtilityModelBasis, RelationDivision, RelationAddition), Parents and
+// Children are the parent-doc and child-doc files as the register lists them.
+// The register file itself appears on one of the two sides.
+type PatentRelation struct {
+	Type     string
+	Parents  []PatentDocumentRef
+	Children []PatentDocumentRef
 }
 
 // PatentClassification represents a classification-ipcr entry with version.
@@ -131,6 +209,7 @@ type PatentClassification struct {
 	Sequence         string
 	Symbol           string // <text>
 	VersionIndicator string // <ipc-version-indicator>
+	SymbolPosition   string // <symbol-position>, when present
 }
 
 // PatentPublication represents a publication reference within patent info.
@@ -147,6 +226,7 @@ type PatentDocumentRef struct {
 	Country string
 	Number  string
 	Date    string
+	Kind    string // document-id/kind, when present
 }
 
 // PatentDesignatedRegion is one designation-pct/regional entry: the region
@@ -174,6 +254,34 @@ type PatentEvent struct {
 	PreviousIPCMainClass   *PatentIPCClass
 	PublishedDocuments     []string
 	DateLastRegisterUpdate string
+	// Party changes. The register sends each party list twice: as verbatim
+	// lines (Applicants, PreviousApplicants, Inventors, PreviousInventors,
+	// Representative, PreviousRepresentative) and structured (the *Parties
+	// fields, from the *-structured elements). Both are kept as sent.
+	Applicants                    []string
+	ApplicantParties              []Party
+	PreviousApplicants            []string
+	PreviousApplicantParties      []Party
+	Inventors                     []string
+	InventorParties               []Party
+	PreviousInventors             []string
+	PreviousInventorParties       []Party
+	Representative                string
+	RepresentativeParties         []Party
+	RepresentativeType            string
+	PreviousRepresentative        string
+	PreviousRepresentativeParties []Party
+	PreviousRepresentativeType    string
+	// Further optional event fields of the register schema, verbatim.
+	DateOfCapture               string
+	IPCSecondaryClasses         []PatentIPCClass
+	PreviousIPCSecondaryClasses []PatentIPCClass
+	ThirdPartyRequest           string
+	BPatGFileNumber             string
+	SuspendedUntil              string
+	Information                 string
+	DateOfReceipt               string
+	BasicPatentFileNumber       string
 }
 
 // PatentEventPublication represents the publication-info of an event.
@@ -201,6 +309,11 @@ type TrademarkSearchResult struct {
 	MaxHitsReached bool
 	Hits           []TrademarkHit
 	RawXML         []byte // original XML response bytes
+	// ListMaxHitsReached, DocumentHitsCounter and DatabaseHitsCounter: see
+	// PatentSearchResult.
+	ListMaxHitsReached  bool
+	DocumentHitsCounter HitCounter
+	DatabaseHitsCounter HitCounter
 }
 
 // TrademarkHit represents a single trademark search result entry.
@@ -245,6 +358,12 @@ type TrademarkInfo struct {
 	FileNumber                 string            // de:FileNumber
 	MarkFeatureDPMA            string            // de:MarkFeatureDPMA
 	RawXML                     []byte            // original XML response bytes
+	// SchemaLocation, TransactionIdentifier and TransactionCode are the ST66
+	// envelope values; PublicationDates are PublicationDetails/Publication dates.
+	SchemaLocation        string
+	TransactionIdentifier string
+	TransactionCode       string
+	PublicationDates      []string
 }
 
 // TrademarkClass represents a Nice classification entry.
@@ -272,6 +391,9 @@ type TrademarkRecord struct {
 	ReceiptDeclarationDate string // de:TransferIncomplete/de:ReceiptDeclarationDate
 	PreviousHolder         *Party
 	NewHolder              *Party
+	// NewCorrespondenceParty is de:TransferIncomplete/de:CorrespondenceAddressDetails/
+	// de:NewCorrespondenceAddress, nil when the record has none.
+	NewCorrespondenceParty *Party
 }
 
 // DesignSearchResult holds parsed design search results.
@@ -284,6 +406,13 @@ type DesignSearchResult struct {
 	MaxHitsReached bool
 	Hits           []DesignHit
 	RawXML         []byte // original XML response bytes
+	// MessageDE, MessageEN, ListMaxHitsReached, DocumentHitsCounter and
+	// DatabaseHitsCounter: see PatentSearchResult.
+	MessageDE           string
+	MessageEN           string
+	ListMaxHitsReached  bool
+	DocumentHitsCounter HitCounter
+	DatabaseHitsCounter HitCounter
 }
 
 // DesignHit represents a single design search result entry.
@@ -324,6 +453,22 @@ type DesignInfo struct {
 	Status             string
 	ClassNumber        string
 	ClassDescription   string
+
+	// ApplicationApplicants are the application-level applicants as sent.
+	// Applicants above is replaced by the first design's applicants when that
+	// design lists its own, so this field keeps the application-level list.
+	ApplicationApplicants []Party
+	// SchemaLocation, TransactionIdentifier and TransactionCode are the ST86
+	// envelope values.
+	SchemaLocation        string
+	TransactionIdentifier string
+	TransactionCode       string
+}
+
+// DesignPublication is one PublicationDetails/Publication entry of a design.
+type DesignPublication struct {
+	Identifier string
+	Date       string
 }
 
 // DesignEntry represents one design within a registration.
@@ -342,6 +487,7 @@ type DesignEntry struct {
 	Applicants         []Party        // design-level applicants
 	Representatives    []Party
 	Extension          DesignExtensionInfo
+	Publications       []DesignPublication // PublicationDetails/Publication
 }
 
 // DesignExtensionInfo holds the DE_ST86Extension scalar fields.
@@ -433,6 +579,11 @@ func (v xmlHitCounterValue) count() int {
 	return n
 }
 
+// counter returns the counter as sent: its text and its flag.
+func (v xmlHitCounterValue) counter() HitCounter {
+	return HitCounter{Text: v.Value, MaxHitsReached: v.MaxHitsReached}
+}
+
 type xmlPatentHitListRecord struct {
 	LeadingRegisteredNumber string                    `xml:"leading-registered-number"`
 	RegisteredNumber        string                    `xml:"registered-number"`
@@ -482,9 +633,40 @@ type xmlPatentBibData struct {
 	PriorityClaims      xmlPriorityClaims      `xml:"priority-claims"`
 	OfficeSpecific      xmlOfficeSpecificBib   `xml:"office-specific-bib-data"`
 	RelatedDocuments    xmlRelatedDocuments    `xml:"related-documents"`
+	ReferencesCited     xmlReferencesCited     `xml:"references-cited"`
 }
 
-type xmlRelatedDocuments struct{}
+type xmlRelatedDocuments struct {
+	UtilityModelBasis []xmlRelationHolder `xml:"utility-model-basis"`
+	Division          []xmlRelationHolder `xml:"division"`
+	Addition          []xmlRelationHolder `xml:"addition"`
+}
+
+type xmlRelationHolder struct {
+	Relation xmlRelation `xml:"relation"`
+}
+
+type xmlRelation struct {
+	Parents  []xmlApplicationRef `xml:"parent-doc"`
+	Children []xmlApplicationRef `xml:"child-doc"`
+}
+
+type xmlReferencesCited struct {
+	Hash      string        `xml:"hash,attr"`
+	Citations []xmlCitation `xml:"citation"`
+}
+
+type xmlCitation struct {
+	Patcit []xmlCitationEntry `xml:"patcit"`
+	Nplcit []xmlCitationEntry `xml:"nplcit"`
+}
+
+type xmlCitationEntry struct {
+	Sequence     string        `xml:"sequence,attr"`
+	DocumentID   xmlDocumentID `xml:"document-id"`
+	Text         string        `xml:"text"`
+	RelevanceInd []string      `xml:"relevance-ind"`
+}
 
 type xmlPublicationRefs struct {
 	Refs []xmlPublicationRef `xml:"publication-reference"`
@@ -536,6 +718,7 @@ type xmlClassificationIPCR struct {
 	Sequence         string `xml:"sequence,attr"`
 	Text             string `xml:"text"`
 	VersionIndicator string `xml:"ipc-version-indicator"`
+	SymbolPosition   string `xml:"symbol-position"`
 }
 
 type xmlParties struct {
@@ -618,6 +801,30 @@ type xmlPatentEventData struct {
 	PreviousIPCMainClass   *xmlEventIPCClass     `xml:"previous-ipc-main-class"`
 	PublishedDocuments     xmlPublishedDocuments `xml:"published-documents"`
 	DateLastRegisterUpdate string                `xml:"date-last-register-update"`
+
+	Applicants                       []string                `xml:"applicants>applicant"`
+	ApplicantsStructured             xmlStructuredApplicants `xml:"applicants-structured"`
+	PreviousApplicants               []string                `xml:"previous-applicants>applicant"`
+	PreviousApplicantsStructured     xmlStructuredApplicants `xml:"previous-applicants-structured"`
+	Inventors                        []string                `xml:"inventors>inventor"`
+	InventorsStructured              xmlStructuredInventors  `xml:"inventors-structured"`
+	PreviousInventors                []string                `xml:"previous-inventors>inventor"`
+	PreviousInventorsStructured      xmlStructuredInventors  `xml:"previous-inventors-structured"`
+	Representative                   string                  `xml:"representative"`
+	RepresentativeStructured         xmlPatentAgents         `xml:"representative-structured"`
+	RepresentativeType               string                  `xml:"representative-type"`
+	PreviousRepresentative           string                  `xml:"previous-representative"`
+	PreviousRepresentativeStructured xmlPatentAgents         `xml:"previous-representative-structured"`
+	PreviousRepresentativeType       string                  `xml:"previous-representative-type"`
+	DateOfCapture                    string                  `xml:"date-of-capture"`
+	IPCSecondaryClasses              []xmlEventIPCClass      `xml:"ipc-secondary-classes>ipc-calls"`
+	PreviousIPCSecondaryClasses      []xmlEventIPCClass      `xml:"previous-ipc-secondary-classes>ipc-calls"`
+	ThirdPartyRequest                string                  `xml:"third-party-request"`
+	BPatGFileNumber                  string                  `xml:"bpatg-file-number"`
+	SuspendedUntil                   string                  `xml:"suspended-until"`
+	Information                      string                  `xml:"information"`
+	DateOfReceipt                    string                  `xml:"date-of-receipt"`
+	BasicPatentFileNumber            string                  `xml:"basic-patent-file-number"`
 }
 
 type xmlEventPublication struct {
@@ -748,6 +955,14 @@ type xmlTMPublicationDetails struct {
 
 type xmlTMPublication struct {
 	PublicationDate string `xml:"PublicationDate"`
+}
+
+func (d xmlTMPublicationDetails) dates() []string {
+	var out []string
+	for _, p := range d.Publications {
+		out = append(out, p.PublicationDate)
+	}
+	return out
 }
 
 type xmlTMApplicantDetails struct {
@@ -1141,6 +1356,8 @@ func partyFromFreeFormat(fna xmlFormattedNameAddress) Party {
 		Street:   addr.Street,
 		Postcode: addr.Postcode,
 		Country:  country,
+		County:   addr.County,
+		State:    addr.State,
 	}
 }
 
@@ -1154,11 +1371,15 @@ func partyFromDesignFormatted(fna xmlDesignFormattedNameAddress) Party {
 		country = addr.CountryCode
 	}
 	return Party{
-		Name:     fna.Name.FormattedName.OrgName,
-		Address:  addr.City,
-		Street:   addr.Street,
-		Postcode: addr.Postcode,
-		Country:  country,
+		Name:          fna.Name.FormattedName.OrgName,
+		Address:       addr.City,
+		Street:        addr.Street,
+		Postcode:      addr.Postcode,
+		Country:       country,
+		County:        addr.County,
+		State:         addr.State,
+		CountryCode:   addr.CountryCode,
+		PostOfficeBox: addr.PostOfficeBox,
 	}
 }
 
@@ -1192,12 +1413,17 @@ func ParsePatentSearch(data []byte) (*PatentSearchResult, error) {
 	}
 
 	result := &PatentSearchResult{
-		TotalHits:      raw.HitCount,
-		DocumentHits:   raw.Counter.DocumentHits.count(),
-		DatabaseHits:   raw.Counter.DatabaseHits.count(),
-		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
-		Hits:           make([]PatentHit, len(raw.Records)),
-		RawXML:         data,
+		TotalHits:           raw.HitCount,
+		DocumentHits:        raw.Counter.DocumentHits.count(),
+		DatabaseHits:        raw.Counter.DatabaseHits.count(),
+		MaxHitsReached:      raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:                make([]PatentHit, len(raw.Records)),
+		RawXML:              data,
+		MessageDE:           raw.MessageDE,
+		MessageEN:           raw.MessageEN,
+		ListMaxHitsReached:  raw.MaxHitsReached,
+		DocumentHitsCounter: raw.Counter.DocumentHits.counter(),
+		DatabaseHitsCounter: raw.Counter.DatabaseHits.counter(),
 	}
 
 	for i := range raw.Records {
@@ -1240,6 +1466,10 @@ func ParsePatentSearch(data []byte) (*PatentSearchResult, error) {
 			PublicationDate:         r.PublicationDate,
 			RegistrationDate:        r.RegistrationDate,
 		}
+		class := ClassifyRegisteredNumber(r.LeadingRegisteredNumber)
+		result.Hits[i].NumberSystem = class.System
+		result.Hits[i].Country = class.Country
+		result.Hits[i].ReceivingOffice = class.ReceivingOffice
 	}
 
 	return result, nil
@@ -1275,6 +1505,7 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 			Sequence:         c.Sequence,
 			Symbol:           c.Text,
 			VersionIndicator: c.VersionIndicator,
+			SymbolPosition:   c.SymbolPosition,
 		})
 		if c.Text != "" {
 			ipcClasses = append(ipcClasses, c.Text)
@@ -1299,6 +1530,30 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 			DateOfProceduralStatus: e.DateOfProceduralStatus,
 			PublishedDocuments:     e.PublishedDocuments.Documents,
 			DateLastRegisterUpdate: e.DateLastRegisterUpdate,
+
+			Applicants:                    e.Applicants,
+			ApplicantParties:              partiesFromStructured(e.ApplicantsStructured.Applicants),
+			PreviousApplicants:            e.PreviousApplicants,
+			PreviousApplicantParties:      partiesFromStructured(e.PreviousApplicantsStructured.Applicants),
+			Inventors:                     e.Inventors,
+			InventorParties:               partiesFromStructured(e.InventorsStructured.Inventors),
+			PreviousInventors:             e.PreviousInventors,
+			PreviousInventorParties:       partiesFromStructured(e.PreviousInventorsStructured.Inventors),
+			Representative:                e.Representative,
+			RepresentativeParties:         partiesFromStructured(e.RepresentativeStructured.Agents),
+			RepresentativeType:            e.RepresentativeType,
+			PreviousRepresentative:        e.PreviousRepresentative,
+			PreviousRepresentativeParties: partiesFromStructured(e.PreviousRepresentativeStructured.Agents),
+			PreviousRepresentativeType:    e.PreviousRepresentativeType,
+			DateOfCapture:                 e.DateOfCapture,
+			IPCSecondaryClasses:           ipcClassList(e.IPCSecondaryClasses),
+			PreviousIPCSecondaryClasses:   ipcClassList(e.PreviousIPCSecondaryClasses),
+			ThirdPartyRequest:             e.ThirdPartyRequest,
+			BPatGFileNumber:               e.BPatGFileNumber,
+			SuspendedUntil:                e.SuspendedUntil,
+			Information:                   e.Information,
+			DateOfReceipt:                 e.DateOfReceipt,
+			BasicPatentFileNumber:         e.BasicPatentFileNumber,
 		}
 		if e.PublicationInfo != nil {
 			ev.PublicationInfo = &PatentEventPublication{
@@ -1361,8 +1616,62 @@ func ParsePatentInfo(data []byte) (*PatentInfo, error) {
 		PublicationLanguageWO:     bib.OfficeSpecific.LanguageWO,
 		Events:                    events,
 		RawXML:                    data,
+		Citations:                 citationsFromXML(bib.ReferencesCited),
+		ReferencesCitedHash:       bib.ReferencesCited.Hash,
+		RelatedDocuments:          relationsFromXML(bib.RelatedDocuments),
 	}
 	return info, nil
+}
+
+func ipcClassList(raw []xmlEventIPCClass) []PatentIPCClass {
+	if len(raw) == 0 {
+		return nil
+	}
+	out := make([]PatentIPCClass, 0, len(raw))
+	for _, c := range raw {
+		out = append(out, PatentIPCClass(c))
+	}
+	return out
+}
+
+func citationsFromXML(raw xmlReferencesCited) []PatentCitation {
+	var out []PatentCitation
+	add := func(entries []xmlCitationEntry, nonPatent bool) {
+		for _, e := range entries {
+			out = append(out, PatentCitation{
+				Sequence:            e.Sequence,
+				NonPatent:           nonPatent,
+				Country:             e.DocumentID.Country,
+				DocNumber:           e.DocumentID.DocNumber,
+				Kind:                e.DocumentID.Kind,
+				Date:                e.DocumentID.Date,
+				Text:                e.Text,
+				RelevanceIndicators: e.RelevanceInd,
+			})
+		}
+	}
+	for _, c := range raw.Citations {
+		add(c.Patcit, false)
+		add(c.Nplcit, true)
+	}
+	return out
+}
+
+func relationsFromXML(raw xmlRelatedDocuments) []PatentRelation {
+	var out []PatentRelation
+	add := func(kind string, holders []xmlRelationHolder) {
+		for _, h := range holders {
+			out = append(out, PatentRelation{
+				Type:     kind,
+				Parents:  documentRefs(h.Relation.Parents),
+				Children: documentRefs(h.Relation.Children),
+			})
+		}
+	}
+	add(RelationUtilityModelBasis, raw.UtilityModelBasis)
+	add(RelationDivision, raw.Division)
+	add(RelationAddition, raw.Addition)
+	return out
 }
 
 // documentRefs converts document-id wrappers (application-reference,
@@ -1379,6 +1688,7 @@ func documentRefs(raw []xmlApplicationRef) []PatentDocumentRef {
 			Country: r.DocumentID.Country,
 			Number:  r.DocumentID.DocNumber,
 			Date:    r.DocumentID.Date,
+			Kind:    r.DocumentID.Kind,
 		})
 	}
 	return refs
@@ -1418,12 +1728,15 @@ func ParseTrademarkSearch(data []byte) (*TrademarkSearchResult, error) {
 	}
 
 	result := &TrademarkSearchResult{
-		TotalHits:      raw.HitCount,
-		DocumentHits:   raw.Counter.DocumentHits.count(),
-		DatabaseHits:   raw.Counter.DatabaseHits.count(),
-		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
-		Hits:           make([]TrademarkHit, len(raw.Entries)),
-		RawXML:         data,
+		TotalHits:           raw.HitCount,
+		DocumentHits:        raw.Counter.DocumentHits.count(),
+		DatabaseHits:        raw.Counter.DatabaseHits.count(),
+		MaxHitsReached:      raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:                make([]TrademarkHit, len(raw.Entries)),
+		RawXML:              data,
+		ListMaxHitsReached:  raw.MaxHitsReached,
+		DocumentHitsCounter: raw.Counter.DocumentHits.counter(),
+		DatabaseHitsCounter: raw.Counter.DatabaseHits.counter(),
 	}
 
 	for i := range raw.Entries {
@@ -1503,6 +1816,11 @@ func ParseTrademarkInfo(data []byte) (*TrademarkInfo, error) {
 			p := partyFromFreeFormat(holders.NewHolder.AddressBook.FormattedNameAddress)
 			rec.NewHolder = &p
 		}
+		corr := mr.RecordProcedureIncomplete.TransferIncomplete.CorrespondenceDetails.NewCorrespondenceAddress.AddressBook.FormattedNameAddress
+		if corr != (xmlFormattedNameAddress{}) {
+			p := partyFromFreeFormat(corr)
+			rec.NewCorrespondenceParty = &p
+		}
 		records = append(records, rec)
 	}
 
@@ -1531,6 +1849,10 @@ func ParseTrademarkInfo(data []byte) (*TrademarkInfo, error) {
 		FileNumber:                 tm.FileNumber,
 		MarkFeatureDPMA:            tm.MarkFeatureDPMA,
 		RawXML:                     data,
+		SchemaLocation:             raw.SchemaLocation,
+		TransactionIdentifier:      raw.Body.Content.TransactionIdentifier,
+		TransactionCode:            raw.Body.Content.TransactionCode,
+		PublicationDates:           tm.PublicationDetails.dates(),
 	}
 	return info, nil
 }
@@ -1546,12 +1868,17 @@ func ParseDesignSearch(data []byte) (*DesignSearchResult, error) {
 	}
 
 	result := &DesignSearchResult{
-		TotalHits:      raw.HitCount,
-		DocumentHits:   raw.Counter.DocumentHits.count(),
-		DatabaseHits:   raw.Counter.DatabaseHits.count(),
-		MaxHitsReached: raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
-		Hits:           make([]DesignHit, len(raw.Records)),
-		RawXML:         data,
+		TotalHits:           raw.HitCount,
+		DocumentHits:        raw.Counter.DocumentHits.count(),
+		DatabaseHits:        raw.Counter.DatabaseHits.count(),
+		MaxHitsReached:      raw.MaxHitsReached || raw.Counter.DatabaseHits.MaxHitsReached,
+		Hits:                make([]DesignHit, len(raw.Records)),
+		RawXML:              data,
+		MessageDE:           raw.MessageDE,
+		MessageEN:           raw.MessageEN,
+		ListMaxHitsReached:  raw.MaxHitsReached,
+		DocumentHitsCounter: raw.Counter.DocumentHits.counter(),
+		DatabaseHitsCounter: raw.Counter.DatabaseHits.counter(),
 	}
 
 	for i := range raw.Records {
@@ -1598,7 +1925,11 @@ func ParseDesignInfo(data []byte) (*DesignInfo, error) {
 		Applicants:             extractDesignApplicants(app.Applicants.Applicants),
 		CorrespondenceParty:    partyFromDesignFormatted(app.CorrespondenceAddress.AddressBook.FormattedNameAddress),
 		RawXML:                 data,
+		SchemaLocation:         raw.SchemaLocation,
+		TransactionIdentifier:  raw.Body.Content.TransactionIdentifier,
+		TransactionCode:        raw.Body.Content.TransactionCode,
 	}
+	info.ApplicationApplicants = info.Applicants
 
 	for i := range app.Designs.Designs {
 		info.Designs = append(info.Designs, convertDesign(&app.Designs.Designs[i]))
@@ -1673,6 +2004,13 @@ func convertDesign(d *xmlDesign) DesignEntry {
 				Description:            cd.Description,
 			})
 		}
+	}
+
+	for _, pub := range d.PublicationDetails.Publications {
+		entry.Publications = append(entry.Publications, DesignPublication{
+			Identifier: pub.PublicationIdentifier,
+			Date:       pub.PublicationDate,
+		})
 	}
 
 	for _, pr := range d.Priorities.Priorities {

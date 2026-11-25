@@ -293,52 +293,12 @@ inside curly braces, for example `{VST=pub-offenlegungsschrift UND VSTT=05.01.20
 
 The `query` subpackage parses and validates queries against per-service field
 definitions (see [Query validation](#query-validation)). Each service supports a
-different set of field codes; the most common are listed below.
+different set of field codes.
 
-Common patent field codes:
+Full query syntax: [SEARCH-SYNTAX.md](SEARCH-SYNTAX.md).
 
-| Code | Description |
-|------|-------------|
-| `TI` | Bezeichnung/Titel (title / designation) |
-| `INH` | Anmelder/Inhaber (applicant / proprietor) |
-| `IN` | Erfinder (inventor) |
-| `IC` | IPC-Klasse (IPC classification) |
-| `AKZ` | Aktenzeichen (file number / publication number) |
-| `PN` | Veröffentlichungsnummer (publication number) |
-| `AT` | Anmeldetag (filing date) |
-| `PUB` | Publikationstag (publication date) |
-| `ST` | Status |
-| `AB` | Abstract |
-
-Common design field codes:
-
-| Code | Description |
-|------|-------------|
-| `TI` | Bezeichnung/Titel (title / designation) |
-| `INH` | Inhaber (proprietor) |
-| `ENTW` | Entwerfer (designer) |
-| `ERZ` | Erzeugnis(se) (product(s)) |
-| `WKL` | Warenklasse (Locarno class) |
-| `RN` | Registernummer (registration number) |
-| `DNR` | Designnummer (design number) |
-| `AT` | Anmeldetag (filing date) |
-| `ET` | Eintragungstag (registration date) |
-
-Common trademark field codes:
-
-| Code | Description |
-|------|-------------|
-| `MARKE` / `md` | Marke (trademark text) |
-| `INH` | Anmelder/Inhaber (applicant / proprietor) |
-| `KL` | Klasse(n) (Nice class(es)) |
-| `BKL` | Bildklasse(n) (Vienna / image class(es)) |
-| `MF` | Markenform (trademark form) |
-| `RN` | Registernummer/Aktenzeichen (registration number / file number) |
-| `AT` | Anmeldetag (filing date) |
-| `ST` | Status |
-
-For full field references, see the DPMAregister help pages:
-- [Patent field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/patgbm/index.html)
+The official DPMAregister help pages list every field code per service:
+- [Patent / utility model field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/patgbm/index.html)
 - [Design field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/gsm/index.html)
 - [Trademark field codes](https://register.dpma.de/register/htdocs/prod/de/hilfe/recherchefelder/marken/index.html)
 

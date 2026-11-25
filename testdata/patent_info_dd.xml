@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <publication-references>
+         <publication-reference sequence="1">
+            <document-id>
+               <country>DD</country>
+               <doc-number>000000136869</doc-number>
+               <kind>A1</kind>
+            </document-id>
+         </publication-reference>
+         <publication-reference sequence="2">
+            <document-id>
+               <country>DD</country>
+               <doc-number>000000136869</doc-number>
+               <kind>B1</kind>
+            </document-id>
+         </publication-reference>
+      </publication-references>
+      <application-reference>
+         <document-id>
+            <country>DE</country>
+            <doc-number>DD2053842</doc-number>
+            <date>1978-05-16</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">Einrichtung zur Sicherung gegen Überdrehzahl, insbesondere für Dampf- oder Gasturbinen</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>F01D0021020000</text>
+            <ipc-version-indicator>01.01.1985</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <parties>
+         <applicants>
+            <applicant sequence="1" app-type="applicant">
+               <addressbook>
+                  <text>  VEB Görlitzer Maschinenbau, 02826 Görlitz, DE</text>
+                  <name>VEB Görlitzer Maschinenbau</name>
+                  <address>
+                     <address-1>02826 Görlitz</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+            <applicant sequence="2" app-type="applicant">
+               <addressbook>
+                  <text>  Siemens AG Berlin u. München, 80331 München, DE</text>
+                  <name>Siemens AG Berlin u. München</name>
+                  <address>
+                     <address-1>80331 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants>
+         <inventors>
+            <inventor sequence="1">
+               <addressbook>
+                  <text>Dipl.-Ing. Bernd Hoffmann, 02827 Görlitz, DE</text>
+                  <name>Dipl.-Ing. Bernd Hoffmann</name>
+                  <address>
+                     <address-1>02827 Görlitz</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="2">
+               <addressbook>
+                  <text>Dipl.-Ing. Manfred Kramer, 02826 Görlitz, DE</text>
+                  <name>Dipl.-Ing. Manfred Kramer</name>
+                  <address>
+                     <address-1>02826 Görlitz</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="3">
+               <addressbook>
+                  <text>Dipl.-Ing. Dieter Mürbe, 01069 Dresden, DE</text>
+                  <name>Dipl.-Ing. Dieter Mürbe</name>
+                  <address>
+                     <address-1>01069 Dresden</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+         </inventors>
+      </parties>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>nicht-anhaengig-erloschen</status>
+         <national-filing-data>1978-05-16</national-filing-data>
+         <date-of-first-publication>1979-08-01</date-of-first-publication>
+         <date-last-register-update>2014-09-24</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents/>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>anmelderaenderung</type-of-procedure>
+         <procedural-status>R081</procedural-status>
+         <date-of-procedural-status>2004-08-16</date-of-procedural-status>
+         <applicants>
+            <applicant>  VEB Görlitzer Maschinenbau, 02826 Görlitz, DE</applicant>
+            <applicant>  Siemens AG Berlin u. München, 80331 München, DE</applicant>
+         </applicants>
+         <applicants-structured>
+            <applicant>
+               <addressbook>
+                  <text>  VEB Görlitzer Maschinenbau, 02826 Görlitz, DE</text>
+                  <name>VEB Görlitzer Maschinenbau</name>
+                  <address>
+                     <address-1>02826 Görlitz</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+            <applicant>
+               <addressbook>
+                  <text>  Siemens AG Berlin u. München, 80331 München, DE</text>
+                  <name>Siemens AG Berlin u. München</name>
+                  <address>
+                     <address-1>80331 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants-structured>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R203</procedural-status>
+         <date-of-procedural-status>1979-08-01</date-of-procedural-status>
+         <published-documents>
+            <document>DD000000136869A1</document>
+         </published-documents>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R203</procedural-status>
+         <date-of-procedural-status>1986-04-23</date-of-procedural-status>
+         <published-documents>
+            <document>DD000000136869B1</document>
+         </published-documents>
+      </event-data>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R999</procedural-status>
+         <date-of-procedural-status>1979-01-15</date-of-procedural-status>
+         <publication-info>
+            <publication-date>1979-01-15</publication-date>
+         </publication-info>
+      </event-data>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R999</procedural-status>
+         <date-of-procedural-status>1984-05-07</date-of-procedural-status>
+         <publication-info>
+            <publication-date>1984-05-07</publication-date>
+         </publication-info>
+      </event-data>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R999</procedural-status>
+         <date-of-procedural-status>1984-08-14</date-of-procedural-status>
+         <publication-info>
+            <publication-date>1984-08-14</publication-date>
+         </publication-info>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verwaltungsverfahren</type-of-procedure>
+         <procedural-status>R071</procedural-status>
+         <date-of-procedural-status>1998-05-17</date-of-procedural-status>
+      </event-data>
+   </events>
+</dpma-patent-document>

@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dpma-patent-document xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                      xmlns:reg="http://elsa.dpma.de/patgbm/register/schema"
+                      xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                      xmlns="http://www.dpma.de/standards/XMLSchema/DE-PATGBM-RegisterExt"
+                      schema-version="0.10">
+   <bibliographic-data>
+      <publication-references>
+         <publication-reference sequence="1">
+            <document-id>
+               <country>DE</country>
+               <doc-number>102019003253</doc-number>
+               <kind>A1</kind>
+            </document-id>
+         </publication-reference>
+      </publication-references>
+      <application-reference>
+         <document-id>
+            <country>DE</country>
+            <doc-number>102019003253.5</doc-number>
+            <date>2019-03-18</date>
+         </document-id>
+      </application-reference>
+      <invention-title lang="DE">Überspannungsschutzgerät mit Spannungsabgriff</invention-title>
+      <classifications-ipcr>
+         <classification-ipcr sequence="1">
+            <text>H02B0001180000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="2">
+            <text>H01H0085320000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="3">
+            <text>H02H0007220000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+         <classification-ipcr sequence="4">
+            <text>H02H0003200000</text>
+            <ipc-version-indicator>2006.01</ipc-version-indicator>
+         </classification-ipcr>
+      </classifications-ipcr>
+      <parties>
+         <applicants>
+            <applicant sequence="1" app-type="applicant">
+               <addressbook>
+                  <text>DEHN SE, 92318 Neumarkt, DE</text>
+                  <name>DEHN SE</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants>
+         <inventors>
+            <inventor sequence="1">
+               <addressbook>
+                  <text>Strangfeld, Uwe, 92318 Neumarkt, DE</text>
+                  <name>Strangfeld, Uwe</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="2">
+               <addressbook>
+                  <text>Hierl, Stephan, 92318 Neumarkt, DE</text>
+                  <name>Hierl, Stephan</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="3">
+               <addressbook>
+                  <text>Leibig, Bernd, 92318 Neumarkt, DE</text>
+                  <name>Leibig, Bernd</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+            <inventor sequence="4">
+               <addressbook>
+                  <text>Spangler, Patrick, 92318 Neumarkt, DE</text>
+                  <name>Spangler, Patrick</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </inventor>
+         </inventors>
+         <correspondence-address>
+            <addressbook>
+               <text>DEHN SE, 92318 Neumarkt, DE</text>
+               <name>DEHN SE</name>
+               <address>
+                  <address-1>92318 Neumarkt</address-1>
+                  <country>DE</country>
+               </address>
+            </addressbook>
+         </correspondence-address>
+      </parties>
+      <references-cited>
+         <citation>
+            <patcit sequence="1">
+               <document-id>
+                  <doc-number>EP000001463074A1</doc-number>
+               </document-id>
+               <relevance-ind>X</relevance-ind>
+            </patcit>
+            <patcit sequence="2">
+               <document-id>
+                  <doc-number>DE102019103531A1</doc-number>
+               </document-id>
+               <relevance-ind>X</relevance-ind>
+            </patcit>
+         </citation>
+      </references-cited>
+      <office-specific-bib-data>
+         <type-of-ip-right>patent</type-of-ip-right>
+         <status>anhaengig-in-kraft</status>
+         <national-filing-data>2019-03-18</national-filing-data>
+         <date-of-first-publication>2020-10-08</date-of-first-publication>
+         <due-date>2027-03-31</due-date>
+         <due-date-fee>pat-zer-jahr-9</due-date-fee>
+         <date-last-register-update>2026-10-14</date-last-register-update>
+      </office-specific-bib-data>
+      <related-documents>
+         <utility-model-basis>
+            <relation>
+               <parent-doc>
+                  <document-id>
+                     <country>DE</country>
+                     <doc-number>1020190032535</doc-number>
+                  </document-id>
+               </parent-doc>
+               <child-doc>
+                  <document-id>
+                     <country>DE</country>
+                     <doc-number>2020191033215</doc-number>
+                  </document-id>
+               </child-doc>
+               <child-doc>
+                  <document-id>
+                     <country>DE</country>
+                     <doc-number>2020190056556</doc-number>
+                  </document-id>
+               </child-doc>
+            </relation>
+         </utility-model-basis>
+         <division>
+            <relation>
+               <parent-doc>
+                  <document-id>
+                     <country>DE</country>
+                     <doc-number>1020191067375</doc-number>
+                  </document-id>
+               </parent-doc>
+               <child-doc>
+                  <document-id>
+                     <country>DE</country>
+                     <doc-number>1020190032535</doc-number>
+                  </document-id>
+               </child-doc>
+            </relation>
+         </division>
+      </related-documents>
+   </bibliographic-data>
+   <events>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R012</procedural-status>
+         <date-of-procedural-status>2025-12-10</date-of-procedural-status>
+         <publication-info>
+            <issue-number>7</issue-number>
+            <year>2026</year>
+            <publication-date>2026-02-12</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+         <date-last-register-update>2026-01-29</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R000</procedural-status>
+         <date-of-procedural-status>2019-05-03</date-of-procedural-status>
+         <date-last-register-update>2020-10-08</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vorverfahren</type-of-procedure>
+         <procedural-status>R004</procedural-status>
+         <date-of-procedural-status>2019-07-22</date-of-procedural-status>
+         <date-last-register-update>2020-10-08</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>anmelderaenderung</type-of-procedure>
+         <procedural-status>R081</procedural-status>
+         <date-of-procedural-status>2019-07-30</date-of-procedural-status>
+         <publication-info>
+            <issue-number>14</issue-number>
+            <year>2022</year>
+            <publication-date>2022-04-07</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+         <applicants>
+            <applicant>DEHN SE + Co KG, 92318 Neumarkt, DE</applicant>
+         </applicants>
+         <applicants-structured>
+            <applicant>
+               <addressbook>
+                  <text>DEHN SE + Co KG, 92318 Neumarkt, DE</text>
+                  <name>DEHN SE + Co KG</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants-structured>
+         <previous-applicants>
+            <applicant>DEHN + SÖHNE GmbH + Co. KG, 92318 Neumarkt, DE</applicant>
+         </previous-applicants>
+         <previous-applicants-structured>
+            <applicant>
+               <addressbook>
+                  <text>DEHN + SÖHNE GmbH + Co. KG, 92318 Neumarkt, DE</text>
+                  <name>DEHN + SÖHNE GmbH + Co. KG</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </previous-applicants-structured>
+         <date-last-register-update>2022-03-30</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>anmelderaenderung</type-of-procedure>
+         <procedural-status>R081</procedural-status>
+         <date-of-procedural-status>2022-02-25</date-of-procedural-status>
+         <publication-info>
+            <issue-number>14</issue-number>
+            <year>2022</year>
+            <publication-date>2022-04-07</publication-date>
+            <publication-type>kleinteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+         <applicants>
+            <applicant>DEHN SE, 92318 Neumarkt, DE</applicant>
+         </applicants>
+         <applicants-structured>
+            <applicant>
+               <addressbook>
+                  <text>DEHN SE, 92318 Neumarkt, DE</text>
+                  <name>DEHN SE</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </applicants-structured>
+         <previous-applicants>
+            <applicant>DEHN SE + Co KG, 92318 Neumarkt, DE</applicant>
+         </previous-applicants>
+         <previous-applicants-structured>
+            <applicant>
+               <addressbook>
+                  <text>DEHN SE + Co KG, 92318 Neumarkt, DE</text>
+                  <name>DEHN SE + Co KG</name>
+                  <address>
+                     <address-1>92318 Neumarkt</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </applicant>
+         </previous-applicants-structured>
+         <date-last-register-update>2022-03-30</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vertreteraenderung</type-of-procedure>
+         <procedural-status>R082</procedural-status>
+         <date-of-procedural-status>2020-12-06</date-of-procedural-status>
+         <representative>Prinz &amp; Partner mbB Patent- und Rechtsanwälte, 80335 München, DE</representative>
+         <representative-structured>
+            <agent>
+               <addressbook>
+                  <text>Prinz &amp; Partner mbB Patent- und Rechtsanwälte, 80335 München, DE</text>
+                  <name>Prinz &amp; Partner mbB Patent- und Rechtsanwälte</name>
+                  <address>
+                     <address-1>80335 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </agent>
+         </representative-structured>
+         <representative-type>vertreter</representative-type>
+         <previous-representative>Meissner Bolte Patentanwälte Rechtsanwälte Partnerschaft mbB, 80538 München, DE</previous-representative>
+         <previous-representative-structured>
+            <agent>
+               <addressbook>
+                  <text>Meissner Bolte Patentanwälte Rechtsanwälte Partnerschaft mbB, 80538 München, DE</text>
+                  <name>Meissner Bolte Patentanwälte Rechtsanwälte Partnerschaft mbB</name>
+                  <address>
+                     <address-1>80538 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </agent>
+         </previous-representative-structured>
+         <previous-representative-type>vertreter</previous-representative-type>
+         <date-last-register-update>2023-08-02</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>vertreteraenderung</type-of-procedure>
+         <procedural-status>R082</procedural-status>
+         <date-of-procedural-status>2026-02-19</date-of-procedural-status>
+         <representative-type>kein-vertreter-bestellt</representative-type>
+         <previous-representative>Prinz &amp; Partner mbB Patent- und Rechtsanwälte, 80335 München, DE</previous-representative>
+         <previous-representative-structured>
+            <agent>
+               <addressbook>
+                  <text>Prinz &amp; Partner mbB Patent- und Rechtsanwälte, 80335 München, DE</text>
+                  <name>Prinz &amp; Partner mbB Patent- und Rechtsanwälte</name>
+                  <address>
+                     <address-1>80335 München</address-1>
+                     <country>DE</country>
+                  </address>
+               </addressbook>
+            </agent>
+         </previous-representative-structured>
+         <previous-representative-type>vertreter</previous-representative-type>
+         <date-last-register-update>2026-02-20</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verwaltungsverfahren</type-of-procedure>
+         <procedural-status>R129</procedural-status>
+         <date-of-procedural-status>2019-05-03</date-of-procedural-status>
+         <date-last-register-update>2020-10-08</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verwaltungsverfahren</type-of-procedure>
+         <procedural-status>R138</procedural-status>
+         <date-of-procedural-status>2019-03-18</date-of-procedural-status>
+         <date-last-register-update>2020-10-08</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>verwaltungsverfahren</type-of-procedure>
+         <procedural-status>R138</procedural-status>
+         <date-of-procedural-status>2019-03-18</date-of-procedural-status>
+         <date-last-register-update>2021-05-05</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>publikationen</type-of-procedure>
+         <procedural-status>R200</procedural-status>
+         <date-of-procedural-status>2020-10-08</date-of-procedural-status>
+         <publication-info>
+            <issue-number>41</issue-number>
+            <year>2020</year>
+            <publication-date>2020-10-08</publication-date>
+            <publication-type>grossteile-publikation</publication-type>
+            <part>teil-2</part>
+         </publication-info>
+         <published-documents>
+            <document>DE102019003253A1</document>
+         </published-documents>
+         <date-last-register-update>2020-10-08</date-last-register-update>
+      </event-data>
+      <event-data>
+         <type-of-procedure>pruefungsverfahren</type-of-procedure>
+         <procedural-status>R015</procedural-status>
+         <date-of-procedural-status>2026-10-13</date-of-procedural-status>
+         <date-last-register-update>2026-10-14</date-last-register-update>
+      </event-data>
+   </events>
+</dpma-patent-document>
